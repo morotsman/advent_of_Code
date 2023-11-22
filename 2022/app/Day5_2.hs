@@ -24,9 +24,10 @@ parseRow row = do
   return (numberToMove, from, to)
 
 move :: Int -> [Char] -> [Char] -> ([Char], [Char])
-move 0 fs ts = (fs, ts)
-move number [] ts = ([], ts)
-move number (f:fs) ts = move (number-1) fs (f:ts)
+move number from to = do
+  let newFrom = drop number from
+  let newTo = take number from ++ to
+  (newFrom, newTo)
 
 topOfStacks :: Map.Map String [Char] -> [Char]
 topOfStacks stacks = do
