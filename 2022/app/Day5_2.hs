@@ -37,12 +37,10 @@ main :: IO ()
 main = do
   --let stacks = [("1", "NZ"),("2", "DCM"),("3", "P")]
   let stacks = [("1", "WLS"),("2", "QNTJ"),("3", "JFHCS"), ("4", "BGNWMRT"), ("5", "BQHDSLRT"), ("6", "LRHFVBJM"), ("7", "MJNRWD"), ("8", "JDNHFTZB"), ("9", "TFBNQLH")]
-  let originalStacks ::  Map.Map String [Char] = Map.fromList stacks
+  let originalStacks = Map.fromList stacks
 
   content <- readFile "/Users/nikleo/workspace/advent_of_Code/2022/app/Day5_input.txt"
   let linesOfFile = lines content
   let result = fmap topOfStacks $ solveIt linesOfFile originalStacks
   print result
-
-  --RLFNRTNFB
 
