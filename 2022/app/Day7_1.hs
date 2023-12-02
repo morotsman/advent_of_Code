@@ -4,7 +4,7 @@ module Main where
 import Data.List (isInfixOf)
 import Control.Lens
 
-data FileSystem = Directory String [FileSystem]
+data FileSystem = Directory String
             | File String Int
             deriving (Show)
 
@@ -17,13 +17,11 @@ data Row = FileSystemRow FileSystem
             deriving (Show)
 
 
-solveIt :: [String] -> Maybe(FileSystem, Int, [Row])
+solveIt :: [String] -> Maybe [Row]
 solveIt inputs = do
-  let root = Directory "Root" []
-  parsedRows <- sequenceA $ fmap parseRow inputs
-  let fileSystem = buildFileSystem parsedRows root
-  let sizes = calculateSizes fileSystem
-  return (fileSystem, summarize sizes, parsedRows)
+  --let root = Directory "Root" []
+  let parsedRows :: Maybe [Row] = sequenceA $ fmap parseRow inputs
+  parsedRows
 
 parseRow :: String -> Maybe Row
 parseRow input | isInfixOf "cd" input = parseCD input
@@ -41,7 +39,7 @@ parseDir :: String -> Maybe Row
 parseDir input = do
   let columns = words input
   name <- columns ^? element 1
-  return (FileSystemRow (Directory name []))
+  return (FileSystemRow (Directory name))
 
 parseFile :: String -> Maybe Row
 parseFile input = do
@@ -50,18 +48,8 @@ parseFile input = do
   name <- columns ^? element 1
   return (FileSystemRow (File name size))
 
-
-buildFileSystem :: [Row] -> FileSystem -> FileSystem
-buildFileSystem inputs filesystem = Directory "one" [File "test" 10, Directory "two" []]
-
-calculateSizes :: FileSystem -> [Int]
-calculateSizes fileSystem = [42]
-
-summarize :: [Int] -> Int
-summarize sizes = sum sizes
-
 main :: IO ()
 main = do
-  content <- readFile "/Users/nikleo/workspace/advent_of_Code/2022/app/Day7_example.txt"
+  content <- readFile "/Users/niklasleopold/workspace/advent_of_Code/2022/app/Day7_example.txt"
   let linesOfFile = lines content
   print $ solveIt linesOfFile
