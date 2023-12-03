@@ -71,20 +71,22 @@ buildFileTree' ::  (FileTree, Path) -> Row -> (FileTree, Path)
 buildFileTree' (fileTree, (p:ps)) (CDRow moveTo) | moveTo == ".." = (fileTree, ps)
 buildFileTree' (fileTree, path) (CDRow moveTo) = (fileTree, [moveTo] ++ path)
 buildFileTree' (fileTree, path) (LSRow) = (fileTree, path)
-buildFileTree' (fileTree, p:ps) row = (updateFileTree p row fileTree, [p] ++ ps)
+buildFileTree' (fileTree, path) row = (updateFileTree (reverse path) row fileTree, path)
 
-updateFileTree ::  String -> Row -> FileTree -> FileTree
+updateFileTree ::  Path -> Row -> FileTree -> FileTree
 updateFileTree _ _ file@(File name size) = file
-updateFileTree directoryToUpdate (DirectoryRow dirName) (Directory name fileTrees) | name == directoryToUpdate =
+updateFileTree (p:[]) (DirectoryRow dirName) (Directory name fileTrees) | name == p =
   Directory name (fileTrees ++ [Directory dirName []])
-updateFileTree directoryToUpdate (FileRow fileName size) (Directory name fileTrees) | name == directoryToUpdate =
+updateFileTree (p:[]) (FileRow fileName size) (Directory name fileTrees) | name == p  =
   Directory name (fileTrees ++ [File fileName size])
-updateFileTree directoryToUpdate row (Directory name fileTrees) = do
-  let updatedFileTrees = fmap (updateFileTree directoryToUpdate row) fileTrees
+updateFileTree (p:ps) row (Directory name fileTrees) | name == p = do
+  let updatedFileTrees = fmap (updateFileTree ps row) fileTrees
   Directory name updatedFileTrees
+updateFileTree _ _ fileTree  =
+  fileTree
 
 main :: IO ()
 main = do
-  content <- readFile "/Users/niklasleopold/workspace/advent_of_Code/2022/app/Day7_example.txt"
+  content <- readFile "/Users/niklasleopold/workspace/advent_of_Code/2022/app/Day7_input.txt"
   let linesOfFile = lines content
   print $ solveIt linesOfFile
