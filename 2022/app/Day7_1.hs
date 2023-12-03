@@ -24,7 +24,7 @@ solveIt inputs = do
 
 parseRow :: String -> Maybe Row
 parseRow input | isInfixOf "cd" input = parseCD input
-               | isInfixOf "ls" input = Just(LSRow)
+               | "$ ls" == input = Just(LSRow)
                | isInfixOf "dir" input = parseDir input
                | otherwise = parseFile input
 
@@ -70,4 +70,6 @@ main :: IO ()
 main = do
   content <- readFile "/Users/niklasleopold/workspace/advent_of_Code/2022/app/Day7_example.txt"
   let linesOfFile = lines content
+  print linesOfFile
+  print "-----------------"
   print $ solveIt linesOfFile
