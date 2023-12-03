@@ -16,11 +16,25 @@ data FileTree = Directory String [FileTree]
 
 type Path = [String]
 
-solveIt :: [String] -> Maybe (FileTree, Path)
+solveIt :: [String] -> Maybe Int
 solveIt inputs = do
   parsedRows <- traverse parseRow inputs
-  let fileTree = buildFileTree parsedRows
-  return fileTree
+  let (fileTree, path) = buildFileTree parsedRows
+  let directorySizes = calculateDirSizes fileTree
+  let answer = sum (filter (\size -> size <= 100000) directorySizes)
+  return answer
+
+calculateDirSizes :: FileTree -> [Int]
+calculateDirSizes (File name size) = []
+calculateDirSizes dir@(Directory name fileTrees) = do
+  let subDirectories = concatMap calculateDirSizes fileTrees
+  [calculateDirSize dir] ++ subDirectories
+
+calculateDirSize :: FileTree -> Int
+calculateDirSize (File name size) = size
+calculateDirSize (Directory name fileTrees) = do
+  let subTrees :: [Int] = fmap calculateDirSize fileTrees
+  sum subTrees
 
 parseRow :: String -> Maybe Row
 parseRow input | stringBeginningWith "$ cd" input = parseCD input
@@ -73,6 +87,4 @@ main :: IO ()
 main = do
   content <- readFile "/Users/niklasleopold/workspace/advent_of_Code/2022/app/Day7_example.txt"
   let linesOfFile = lines content
-  print linesOfFile
-  print "-----------------"
   print $ solveIt linesOfFile
