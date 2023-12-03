@@ -54,16 +54,16 @@ buildFileTree' ::  (FileTree, Path) -> Row -> (FileTree, Path)
 buildFileTree' (fileTree, (p:ps)) (CDRow moveTo) | moveTo == ".." = (fileTree, ps)
 buildFileTree' (fileTree, path) (CDRow moveTo) = (fileTree, [moveTo] ++ path)
 buildFileTree' (fileTree, path) (LSRow) = (fileTree, path)
-buildFileTree' (fileTree, p:ps) row = (updateFileTree fileTree p row, [p] ++ ps)
+buildFileTree' (fileTree, p:ps) row = (updateFileTree p row fileTree, [p] ++ ps)
 
-updateFileTree :: FileTree -> String -> Row -> FileTree
-updateFileTree file@(File name size) _ _ = file
-updateFileTree (Directory name fileTrees) directoryToUpdate (DirectoryRow dirName) | name == directoryToUpdate =
+updateFileTree ::  String -> Row -> FileTree -> FileTree
+updateFileTree _ _ file@(File name size)= file
+updateFileTree directoryToUpdate (DirectoryRow dirName) (Directory name fileTrees) | name == directoryToUpdate =
   Directory name (fileTrees ++ [Directory dirName []])
-updateFileTree (Directory name fileTrees) directoryToUpdate (FileRow dirName size) | name == directoryToUpdate =
+updateFileTree directoryToUpdate (FileRow dirName size) (Directory name fileTrees) | name == directoryToUpdate =
   Directory name (fileTrees ++ [File dirName size])
-updateFileTree (Directory name fileTrees) directoryToUpdate row = do
-  let updatedFileTrees = fmap (\fileTree -> updateFileTree fileTree directoryToUpdate row) fileTrees
+updateFileTree directoryToUpdate row (Directory name fileTrees) = do
+  let updatedFileTrees = fmap (updateFileTree directoryToUpdate row) fileTrees
   Directory name updatedFileTrees
 
 main :: IO ()
