@@ -23,7 +23,7 @@ solveIt inputs = do
   return fileTree
 
 parseRow :: String -> Maybe Row
-parseRow input | isInfixOf "cd" input = parseCD input
+parseRow input | isInfixOf "$ cd" input = parseCD input
                | "$ ls" == input = Just(LSRow)
                | isInfixOf "dir" input = parseDir input
                | otherwise = parseFile input
