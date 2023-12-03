@@ -57,11 +57,11 @@ buildFileTree' (fileTree, path) (LSRow) = (fileTree, path)
 buildFileTree' (fileTree, p:ps) row = (updateFileTree p row fileTree, [p] ++ ps)
 
 updateFileTree ::  String -> Row -> FileTree -> FileTree
-updateFileTree _ _ file@(File name size)= file
+updateFileTree _ _ file@(File name size) = file
 updateFileTree directoryToUpdate (DirectoryRow dirName) (Directory name fileTrees) | name == directoryToUpdate =
   Directory name (fileTrees ++ [Directory dirName []])
-updateFileTree directoryToUpdate (FileRow dirName size) (Directory name fileTrees) | name == directoryToUpdate =
-  Directory name (fileTrees ++ [File dirName size])
+updateFileTree directoryToUpdate (FileRow fileName size) (Directory name fileTrees) | name == directoryToUpdate =
+  Directory name (fileTrees ++ [File fileName size])
 updateFileTree directoryToUpdate row (Directory name fileTrees) = do
   let updatedFileTrees = fmap (updateFileTree directoryToUpdate row) fileTrees
   Directory name updatedFileTrees
