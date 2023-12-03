@@ -23,10 +23,13 @@ solveIt inputs = do
   return fileTree
 
 parseRow :: String -> Maybe Row
-parseRow input | isInfixOf "$ cd" input = parseCD input
+parseRow input | stringBeginningWith "$ cd" input = parseCD input
                | "$ ls" == input = Just(LSRow)
-               | isInfixOf "dir" input = parseDir input
+               | stringBeginningWith "dir" input = parseDir input
                | otherwise = parseFile input
+
+stringBeginningWith :: String -> String -> Bool
+stringBeginningWith beginning string = beginning == take (length beginning) string
 
 parseCD :: String -> Maybe Row
 parseCD input = do
