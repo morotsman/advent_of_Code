@@ -15,16 +15,14 @@ data Movement = MoveUp
 
 data Rope = Rope(Coordinate, Coordinate) deriving (Show)
 
-type VisitedCoordinates = [Rope]
-
 type Distance = Int
 
 solveIt :: [String] -> Answer
 solveIt input = do
   let rope = Rope(Coordinate(0,0), Coordinate(0,0))
   movements <- traverse parseRow input
-  let visitedCoordinates = foldl (\ vc@(r:rs) movement ->  (reverse (moveRope r movement)) ++ vc ) [rope] movements
-  let tailPosition = fmap (\ (Rope(head, tail)) -> tail) visitedCoordinates
+  let ropePositions = foldl (\ vc@(r:rs) movement ->  (reverse (moveRope r movement)) ++ vc ) [rope] movements
+  let tailPosition = fmap (\ (Rope(head, tail)) -> tail) ropePositions
   let uniqueTailPositions = fromList tailPosition
   return (length uniqueTailPositions)
 
