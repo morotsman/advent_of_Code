@@ -41,13 +41,18 @@ getDistance row = fmap read (words row) ^? element 1
 moveRope :: Rope -> (Movement, Distance) -> [Rope]
 moveRope _ (_, distance) | distance == 0 = []
 moveRope [] _ = []
-moveRope (r:rs) (movement, distance) =
-  let (Coordinate(hx, hy)) = r
-      (Coordinate(tx, ty)) = head rs
+moveRope oldRope (movement, distance) =
+  let rope = moveRopeOneStep oldRope movement
+  in [rope] ++ moveRope rope (movement, (distance - 1))
+
+moveRopeOneStep :: Rope -> Movement -> Rope
+moveRopeOneStep [] _ = []
+moveRopeOneStep (r1:r2:rs) movement =
+  let (Coordinate(hx, hy)) = r1
+      (Coordinate(tx, ty)) = r2
       headMovement = moveHead (Coordinate(hx, hy)) movement
       tailMovement = moveTail headMovement (Coordinate(tx, ty))
-      rope = [headMovement, tailMovement]
-  in [rope] ++ moveRope rope (movement, (distance - 1))
+  in [headMovement, tailMovement]
 
 moveHead :: Coordinate -> Movement -> Coordinate
 moveHead (Coordinate(x, y)) movement | movement == MoveRight = Coordinate(x + 1, y)
