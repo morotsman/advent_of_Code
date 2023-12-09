@@ -22,7 +22,7 @@ maintainer:         niklas.leopold@verisure.com
 extra-source-files: CHANGELOG.md
 
 executable day2
-    main-is:          Day8_2.hs
+    main-is:          Day9_1.hs
 
     -- Modules included in this executable, other than Main.
     -- other-modules:
