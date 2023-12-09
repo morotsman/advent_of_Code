@@ -13,16 +13,16 @@ data Movement = MoveUp
                 | MoveRight
                 deriving (Show, Eq)
 
-data Rope = Rope(Coordinate, Coordinate) deriving (Show)
+type Rope = [Coordinate]
 
 type Distance = Int
 
 solveIt :: [String] -> Answer
 solveIt input = do
-  let rope = Rope(Coordinate(0,0), Coordinate(0,0))
+  let rope = [Coordinate(0,0), Coordinate(0,0)]
   movements <- traverse parseRow input
   let ropePositions = foldl (\ vc@(r:rs) movement ->  (reverse (moveRope r movement)) ++ vc ) [rope] movements
-  let tailPosition = fmap (\ (Rope(head, tail)) -> tail) ropePositions
+  let tailPosition = fmap (\ (r:rs) -> rs) ropePositions
   let uniqueTailPositions = fromList tailPosition
   return (length uniqueTailPositions)
 
@@ -39,11 +39,14 @@ getDistance :: String -> Maybe Int
 getDistance row = fmap read (words row) ^? element 1
 
 moveRope :: Rope -> (Movement, Distance) -> [Rope]
-moveRope (Rope(head,tail)) (_, distance) | distance == 0 = []
-moveRope (Rope(Coordinate(hx, hy), Coordinate(tx, ty))) (movement, distance) =
-  let headMovement = moveHead (Coordinate(hx, hy)) movement
+moveRope _ (_, distance) | distance == 0 = []
+moveRope [] _ = []
+moveRope (r:rs) (movement, distance) =
+  let (Coordinate(hx, hy)) = r
+      (Coordinate(tx, ty)) = head rs
+      headMovement = moveHead (Coordinate(hx, hy)) movement
       tailMovement = moveTail headMovement (Coordinate(tx, ty))
-      rope = Rope(headMovement, tailMovement)
+      rope = [headMovement, tailMovement]
   in [rope] ++ moveRope rope (movement, (distance - 1))
 
 moveHead :: Coordinate -> Movement -> Coordinate
@@ -83,7 +86,7 @@ moveDiagonally head@(Coordinate(hx, hy)) tail@(Coordinate(tx, ty)) | hx > tx && 
 
 main :: IO ()
 main = do
-  content <- readFile "/Users/niklasleopold/workspace/advent_of_Code/2022/app/Day9_input.txt"
+  content <- readFile "/Users/niklasleopold/workspace/advent_of_Code/2022/app/Day9_input.txt" -- 5874 / 13
   let linesOfFile = lines content
   let answer = solveIt linesOfFile
   print answer
