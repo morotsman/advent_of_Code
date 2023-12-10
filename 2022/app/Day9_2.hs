@@ -25,6 +25,7 @@ solveIt input = do
   let tailPosition = fmap (\ (r:rs) -> rs) ropePositions
   let uniqueTailPositions = fromList tailPosition
   return (length uniqueTailPositions)
+  --return (reverse ropePositions)
 
 parseRow :: String -> Maybe (Movement, Distance)
 parseRow input | stringBeginningWith "R " input = fmap (\d -> (MoveRight, d)) (getDistance input)
@@ -41,18 +42,17 @@ getDistance row = fmap read (words row) ^? element 1
 moveRope :: Rope -> (Movement, Distance) -> [Rope]
 moveRope _ (_, distance) | distance == 0 = []
 moveRope [] _ = []
-moveRope oldRope (movement, distance) =
-  let rope = moveRopeOneStep oldRope movement
+moveRope (head:tail) (movement, distance) =
+  let (Coordinate(hx, hy)) = head
+      headMovement = moveHead (Coordinate(hx, hy)) movement
+      rope = [headMovement] ++ moveTails tail headMovement movement
   in [rope] ++ moveRope rope (movement, (distance - 1))
 
-moveRopeOneStep :: Rope -> Movement -> Rope
-moveRopeOneStep [] _ = []
-moveRopeOneStep (r1:r2:rs) movement =
-  let (Coordinate(hx, hy)) = r1
-      (Coordinate(tx, ty)) = r2
-      headMovement = moveHead (Coordinate(hx, hy)) movement
-      tailMovement = moveTail headMovement (Coordinate(tx, ty))
-  in [headMovement, tailMovement]
+moveTails :: Rope -> Coordinate -> Movement -> Rope
+moveTails [] _ _ = []
+moveTails (r1:rs) coordinate movement =
+  let tailMovement = moveTail coordinate r1
+  in [tailMovement] ++ moveTails rs tailMovement movement
 
 moveHead :: Coordinate -> Movement -> Coordinate
 moveHead (Coordinate(x, y)) movement | movement == MoveRight = Coordinate(x + 1, y)
