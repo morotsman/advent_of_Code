@@ -19,10 +19,10 @@ type Distance = Int
 
 solveIt :: [String] -> Answer
 solveIt input = do
-  let rope = [Coordinate(0,0), Coordinate(0,0)]
+  let rope = [Coordinate(0,0), Coordinate(0,0), Coordinate(0,0), Coordinate(0,0), Coordinate(0,0), Coordinate(0,0), Coordinate(0,0), Coordinate(0,0), Coordinate(0,0), Coordinate(0,0)]
   movements <- traverse parseRow input
-  let ropePositions = foldl (\ vc@(r:rs) movement ->  (reverse (moveRope r movement)) ++ vc ) [rope] movements
-  let tailPosition = fmap (\ (r:rs) -> rs) ropePositions
+  let ropePositions :: [Rope] = foldl (\ vc@(r:rs) movement ->  (reverse (moveRope r movement)) ++ vc ) [rope] movements
+  let tailPosition = fmap (\ rope -> rope !! 9) ropePositions
   let uniqueTailPositions = fromList tailPosition
   return (length uniqueTailPositions)
   --return (reverse ropePositions)
