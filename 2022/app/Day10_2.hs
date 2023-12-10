@@ -2,6 +2,7 @@
 module Main where
 
 import Control.Lens
+import Data.List.Split (chunksOf)
 
 type Answer = Maybe [String]
 
@@ -16,16 +17,7 @@ solveIt :: [String] -> Answer
 solveIt input = do
   instructions <- traverse parseRow input
   let allResults = execute instructions (1, 0)
-  let values = fmap (\(value, cycle) -> if (isVisible (value, cycle)) then "#" else ".") allResults
-  return (fmap join $ groupBy40 values)
-
-groupBy40 :: [a] -> [[a]]
-groupBy40 [] = []
-groupBy40 xs = take 40 xs : groupBy40 (drop 40 xs)
-
-join :: [String] -> String
-join [] = ""
-join (x:xs) = x ++ join xs
+  return . map concat . chunksOf 40 $ map (\(value, cycle) -> if (isVisible (value, cycle)) then "#" else ".") allResults
 
 isVisible :: (RegistryValue, Cycle) -> Bool
 isVisible (value, cycle) = elem (mod (cycle-1) 40)  ([value-1, value, value + 1])
@@ -52,7 +44,5 @@ execute (i:is) (currentValue, currentCycle) | i == Noop =
 
 main :: IO ()
 main = do
-  content <- readFile "/Users/niklasleopold/workspace/advent_of_Code/2022/app/Day10_input.txt"
-  let linesOfFile = lines content
-  let answer = solveIt linesOfFile
-  print answer
+  content <- readFile "/Users/niklasleopold/workspace/advent_of_Code/2022/app/Day10_example_2.txt"
+  print . solveIt . lines $ content
