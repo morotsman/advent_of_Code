@@ -2,7 +2,7 @@
 module Main where
 
 import Control.Lens
-import Day11_example_1 (Monkey(..), getExampleMonkeys)
+import Day11_example_1 (Monkey(..), getExampleMonkeys, getInputMonkeys)
 
 type Answer = [[Monkey]]
 
@@ -26,7 +26,7 @@ takeTurnForMonkey monkeys monkeyIndex | null (startingItems $ monkeys !! monkeyI
   (i: is) = startingItems monkey
   newWorryLevel = (operation monkey i) `div` 3
   toMonkeyIndex = if (test monkey newWorryLevel) then throwToIfTrue monkey else throwToIfFalse monkey
-  newFromMonkey = monkey { startingItems = is }
+  newFromMonkey = monkey { startingItems = is, inspections = (inspections monkey) + 1 }
   oldToMonkey = monkeys !! toMonkeyIndex
   newToMonkey = oldToMonkey { startingItems = newWorryLevel : startingItems oldToMonkey }
   newMonkeys = replaceMonkey (replaceMonkey monkeys newToMonkey) newFromMonkey
@@ -39,11 +39,11 @@ replaceMonkey monkeys monkey = let
   in before ++ [monkey] ++ after
 
 showMonkeyTurn :: Monkey -> String
-showMonkeyTurn monkey = "Monkey " ++ (show $ monkeyIndex monkey) ++ " has " ++ (show $ startingItems monkey)
+showMonkeyTurn monkey = "Monkey " ++ (show $ monkeyIndex monkey) ++ " has " ++ (show $ startingItems monkey) ++ " inspected: " ++ (show $ inspections monkey)
 
 main :: IO ()
 main = do
-  let monkeys :: [Monkey] = getExampleMonkeys
+  let monkeys :: [Monkey] = getInputMonkeys
   print (fmap showMonkeyTurn monkeys)
   print "-----------------"
   let turns :: [[Monkey]] = solveIt monkeys

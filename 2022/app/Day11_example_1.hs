@@ -1,5 +1,5 @@
 {-# LANGUAGE ScopedTypeVariables #-}
-module Day11_example_1 (Monkey(..), getExampleMonkeys) where
+module Day11_example_1 (Monkey(..), getExampleMonkeys, getInputMonkeys) where
 
 type WorryLevel = Int
 
@@ -9,7 +9,8 @@ data Monkey = Monkey {
   operation :: (Int -> Int),
   test :: (Int -> Bool),
   throwToIfTrue :: Int,
-  throwToIfFalse :: Int
+  throwToIfFalse :: Int,
+  inspections :: Int
 }
 
 getExampleMonkeys :: [Monkey]
@@ -20,7 +21,8 @@ getExampleMonkeys = [
     operation = (* 19),
     test = (\x -> x `mod` 23 == 0),
     throwToIfTrue = 2,
-    throwToIfFalse = 3
+    throwToIfFalse = 3,
+    inspections = 0
   },
   Monkey {
     monkeyIndex = 1,
@@ -28,7 +30,8 @@ getExampleMonkeys = [
     operation = (+ 6),
     test = (\x -> x `mod` 19 == 0),
     throwToIfTrue = 2,
-    throwToIfFalse = 0
+    throwToIfFalse = 0,
+    inspections = 0
   },
   Monkey {
     monkeyIndex = 2,
@@ -36,7 +39,8 @@ getExampleMonkeys = [
     operation = (\x -> x * x),
     test = (\x -> x `mod` 13 == 0),
     throwToIfTrue = 1,
-    throwToIfFalse = 3
+    throwToIfFalse = 3,
+    inspections = 0
   },
   Monkey {
     monkeyIndex = 3,
@@ -44,7 +48,8 @@ getExampleMonkeys = [
     operation = (+ 3),
     test = (\x -> x `mod` 17 == 0),
     throwToIfTrue = 0,
-    throwToIfFalse = 1
+    throwToIfFalse = 1,
+    inspections = 0
   }
   ]
 
@@ -56,7 +61,8 @@ getInputMonkeys = [
       operation = (* 17),
       test = (\x -> x `mod` 13 == 0),
       throwToIfTrue = 6,
-      throwToIfFalse = 7
+      throwToIfFalse = 7,
+      inspections = 0
     },
     Monkey {
       monkeyIndex = 1,
@@ -64,7 +70,8 @@ getInputMonkeys = [
       operation = (+ 8),
       test = (\x -> x `mod` 7 == 0),
       throwToIfTrue = 0,
-      throwToIfFalse = 7
+      throwToIfFalse = 7,
+      inspections = 0
     },
     Monkey {
       monkeyIndex = 2,
@@ -72,7 +79,8 @@ getInputMonkeys = [
       operation = (+ 6),
       test = (\x -> x `mod` 19 == 0),
       throwToIfTrue = 5,
-      throwToIfFalse = 3
+      throwToIfFalse = 3,
+      inspections = 0
     },
     Monkey {
       monkeyIndex = 3,
@@ -80,7 +88,8 @@ getInputMonkeys = [
       operation = (* 19),
       test = (\x -> x `mod` 2 == 0),
       throwToIfTrue = 4,
-      throwToIfFalse = 1
+      throwToIfFalse = 1,
+      inspections = 0
     },
     Monkey {
       monkeyIndex = 4,
@@ -88,7 +97,8 @@ getInputMonkeys = [
       operation = (+ 7),
       test = (\x -> x `mod` 5 == 0),
       throwToIfTrue = 1,
-      throwToIfFalse = 0
+      throwToIfFalse = 0,
+      inspections = 0
     },
     Monkey {
       monkeyIndex = 5,
@@ -96,7 +106,8 @@ getInputMonkeys = [
       operation = (\x -> x * x),
       test = (\x -> x `mod` 3 == 0),
       throwToIfTrue = 3,
-      throwToIfFalse = 4
+      throwToIfFalse = 4,
+      inspections = 0
     },
     Monkey {
       monkeyIndex = 6,
@@ -104,7 +115,8 @@ getInputMonkeys = [
       operation = (+ 1),
       test = (\x -> x `mod` 11 == 0),
       throwToIfTrue = 5,
-      throwToIfFalse = 2
+      throwToIfFalse = 2,
+      inspections = 0
     },
     Monkey {
       monkeyIndex = 7,
@@ -112,6 +124,7 @@ getInputMonkeys = [
       operation = (+ 2),
       test = (\x -> x `mod` 17 == 0),
       throwToIfTrue = 6,
-      throwToIfFalse = 2
+      throwToIfFalse = 2,
+      inspections = 0
     }
     ]
