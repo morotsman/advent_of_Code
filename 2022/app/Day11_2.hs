@@ -2,12 +2,13 @@
 module Main where
 
 import Control.Lens
+import Data.List (sort)
 import Day11_example_1 (Monkey(..), getExampleMonkeys, getInputMonkeys)
 
 type Answer = [[Monkey]]
 
 solveIt :: [Monkey] -> Answer
-solveIt = takeTurns 1000
+solveIt = takeTurns 10000
 
 takeTurns :: Int -> [Monkey] -> [[Monkey]]
 takeTurns _ [] = []
@@ -24,7 +25,7 @@ takeTurnForMonkey monkeys monkeyIndex | null (startingItems $ monkeys !! monkeyI
                              | otherwise = let
   monkey = monkeys !! monkeyIndex
   (i: is) = startingItems monkey
-  newWorryLevel = (operation monkey i)
+  newWorryLevel = (operation monkey i) `mod` 9699690
   toMonkeyIndex = if (test monkey newWorryLevel) then throwToIfTrue monkey else throwToIfFalse monkey
   newFromMonkey = monkey { startingItems = is, inspections = (inspections monkey) + 1 }
   oldToMonkey = monkeys !! toMonkeyIndex
@@ -38,14 +39,12 @@ replaceMonkey monkeys monkey = let
   (before, _: after) = splitAt index monkeys
   in before ++ [monkey] ++ after
 
-showMonkeyTurn :: Monkey -> String
-showMonkeyTurn monkey = (show $ inspections monkey)
+showMonkeyTurn :: Monkey -> Int
+showMonkeyTurn monkey = (inspections monkey)
 
 main :: IO ()
 main = do
-  let monkeys :: [Monkey] = getExampleMonkeys
-  print (fmap showMonkeyTurn monkeys)
-  print "-----------------"
+  let monkeys :: [Monkey] = getInputMonkeys
   let turns :: [[Monkey]] = solveIt monkeys
   let results = fmap (fmap showMonkeyTurn) turns
-  print (last results)
+  print (reverse $ sort $ last results)
