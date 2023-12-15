@@ -1,13 +1,13 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 module Day11_example_1 (Monkey(..), getExampleMonkeys, getInputMonkeys) where
 
-type WorryLevel = Int
+type WorryLevel = Integer
 
 data Monkey = Monkey {
   monkeyIndex :: Int,
   startingItems :: [WorryLevel],
-  operation :: (Int -> Int),
-  test :: (Int -> Bool),
+  operation :: (WorryLevel -> WorryLevel),
+  test :: (WorryLevel -> Bool),
   throwToIfTrue :: Int,
   throwToIfFalse :: Int,
   inspections :: Int
