@@ -9,24 +9,24 @@ type Answer = [String]
 data Tile = Tile {
   tileId :: Int,
   tileMatrix :: Matrix Char
-}
+} deriving (Show, Eq)
 
-data Match = Top {
-    matrix1 :: Matrix Char,
-    matrix2 :: Matrix Char
+data Match = TopMatch {
+    tile1 :: Tile,
+    tile2 :: Tile
   }
-  | Bottom {
-    matrix1 :: Matrix Char,
-    matrix2 :: Matrix Char
+  | BottomMatch {
+    matrix1 :: Tile,
+    matrix2 :: Tile
   }
-  | Left {
-    matrix1 :: Matrix Char,
-    matrix2 :: Matrix Char
+  | LeftMatch {
+    matrix1 :: Tile,
+    matrix2 :: Tile
   }
-  | Right {
-    matrix1 :: Matrix Char,
-    matrix2 :: Matrix Char
-  }
+  | RightMatch {
+    matrix1 :: Tile,
+    matrix2 :: Tile
+  } deriving (Show, Eq)
 
 matrix2311 :: Matrix Char
 matrix2311 = Matrix
@@ -42,6 +42,9 @@ matrix2311 = Matrix
          , "..###..###"
          ]
 
+tile2311 :: Tile
+tile2311 = Tile 2311 matrix2311
+
 matrix1951 :: Matrix Char
 matrix1951 = Matrix
   [        "#.##...##."
@@ -55,6 +58,9 @@ matrix1951 = Matrix
          , "..#.#..#.#"
          , "#...##.#.."
          ]
+
+tile1951 :: Tile
+tile1951 = Tile 1951 matrix1951
 
 solveIt :: [String] -> Answer
 solveIt input = input
@@ -71,15 +77,15 @@ leftColumn matrix = getColumn 0 matrix
 rightColumn :: Matrix a -> [a]
 rightColumn matrix = getColumn 9 matrix
 
-findAllMatchingEdgePositions :: Matrix Char -> Matrix Char -> [(Matrix Char, Matrix Char)]
+findAllMatchingEdgePositions :: Tile -> Tile -> [Match]
 findAllMatchingEdgePositions matrix1 matrix2 = do
     matrix1 <- allTransformations matrix1
     matrix2 <- allTransformations matrix2
     findMatchingEdgePositions matrix1 matrix2
 
-allTransformations :: Matrix Char -> [Matrix Char]
-allTransformations matrix =
-  nub $
+allTransformations :: Tile -> [Tile]
+allTransformations t@(Tile _ matrix) = let
+  transformations = nub $
     [ matrix
     , rotateMatrix matrix
     , rotateMatrix (rotateMatrix matrix)
@@ -89,24 +95,33 @@ allTransformations matrix =
     , rotateMatrix (flipMatrixHorizontally matrix)
     , rotateMatrix (flipMatrixVertically matrix)
     ]
+  in fmap (\m -> t { tileMatrix = m }) transformations
 
-findMatchingEdgePositions :: Matrix Char -> Matrix Char -> [(Matrix Char, Matrix Char)]
-findMatchingEdgePositions m1 m2 = let
-  matchLeft = if (leftColumn m1 == rightColumn m2) then [(m1, m2)] else []
-  matchRight = if (rightColumn m1 == leftColumn m2) then [(m1, m2)] else []
-  matchTop = if (topRow m1 == bottomRow m2) then [(m1, m2)] else []
-  matchBottom = if (bottomRow m1 == topRow m2) then [(m1, m2)] else []
+findMatchingEdgePositions :: Tile -> Tile -> [Match]
+findMatchingEdgePositions t1@(Tile _ m1) t2@(Tile _ m2) = let
+  matchLeft = if (leftColumn m1 == rightColumn m2) then [LeftMatch t1 t2] else []
+  matchRight = if (rightColumn m1 == leftColumn m2) then [RightMatch t1 t2] else []
+  matchTop = if (topRow m1 == bottomRow m2) then [TopMatch t1 t2] else []
+  matchBottom = if (bottomRow m1 == topRow m2) then [BottomMatch t1 t2] else []
   in
     matchLeft ++ matchRight ++ matchTop ++ matchBottom
+
+removeMatrix :: Tile -> Tile
+removeMatrix (Tile id _) = Tile id (Matrix [])
+
+matchWithoutMatrix :: Match -> Match
+matchWithoutMatrix (TopMatch t1 t2) = TopMatch (removeMatrix t1) (removeMatrix t2)
+matchWithoutMatrix (BottomMatch t1 t2) = BottomMatch (removeMatrix t1) (removeMatrix t2)
+matchWithoutMatrix (LeftMatch t1 t2) = LeftMatch (removeMatrix t1) (removeMatrix t2)
+matchWithoutMatrix (RightMatch t1 t2) = RightMatch (removeMatrix t1) (removeMatrix t2)
+
 
 main :: IO ()
 main = do
   content <- readFile "/Users/niklasleopold/workspace/advent_of_Code/2020/app/Day20_example.txt"
   let linesOfFile = lines content
   let answer = solveIt linesOfFile
-  print (length (findAllMatchingEdgePositions matrix1951 matrix1951))
-  print (length (findAllMatchingEdgePositions matrix1951 matrix2311))
-  print matrix2311
-  printMatrix matrix2311
-
+--  print (length (findAllMatchingEdgePositions matrix1951 matrix1951))
+  print (fmap matchWithoutMatrix (findAllMatchingEdgePositions tile1951 tile2311))
+  print (length (findAllMatchingEdgePositions tile1951 tile2311))
 
