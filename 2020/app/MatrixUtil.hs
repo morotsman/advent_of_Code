@@ -3,26 +3,26 @@ module MatrixUtil (Matrix(..), rotateMatrix, flipMatrixHorizontally, flipMatrixV
 
 import Data.List (transpose, nub)
 
-type Matrix a = [[a]]
+data Matrix a = Matrix [[a]] deriving (Show, Eq)
 
-rotateMatrix :: [[a]] -> [[a]]
-rotateMatrix = transpose . reverse
+rotateMatrix :: Matrix a -> Matrix a
+rotateMatrix (Matrix matrix) = Matrix (transpose . reverse $ matrix)
 
-flipMatrixHorizontally :: [[a]] -> [[a]]
-flipMatrixHorizontally = map reverse
+flipMatrixHorizontally :: Matrix a -> Matrix a
+flipMatrixHorizontally (Matrix matrix) = Matrix (map reverse matrix)
 
-flipMatrixVertically :: [[a]] -> [[a]]
-flipMatrixVertically = reverse
+flipMatrixVertically :: Matrix a -> Matrix a
+flipMatrixVertically (Matrix matrix) = Matrix (reverse matrix)
 
-getRow :: Int -> [[a]] -> [a]
-getRow index matrix
+getRow :: Int -> Matrix a -> [a]
+getRow index (Matrix matrix)
   | index < 0 || index >= length matrix = error "Invalid row index"
   | otherwise = matrix !! index
 
-getColumn :: Int -> [[a]] -> [a]
-getColumn index matrix
+getColumn :: Int -> Matrix a -> [a]
+getColumn index (Matrix matrix)
   | index < 0 || null matrix || any (\row -> index >= length row) matrix = error "Invalid column index"
   | otherwise = reverse (map (!! index) matrix)
 
 printMatrix :: Matrix Char -> IO ()
-printMatrix = mapM_ putStrLn
+printMatrix (Matrix matrix) = mapM_ putStrLn matrix

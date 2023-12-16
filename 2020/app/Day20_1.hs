@@ -14,7 +14,7 @@ data Tile = Tile {
 data Match = Top | Bottom | Left | Right
 
 matrix2311 :: Matrix Char
-matrix2311 =
+matrix2311 = Matrix
           ["..##.#..#."
          , "##..#....."
          , "#...##..#."
@@ -28,7 +28,7 @@ matrix2311 =
          ]
 
 matrix1951 :: Matrix Char
-matrix1951 =
+matrix1951 = Matrix
   [        "#.##...##."
          , "#.####...#"
          , ".....#..##"
@@ -44,16 +44,16 @@ matrix1951 =
 solveIt :: [String] -> Answer
 solveIt input = input
 
-topRow :: [[a]] -> [a]
+topRow :: Matrix a -> [a]
 topRow matrix = getRow 9 matrix
 
-bottomRow :: [[a]] -> [a]
+bottomRow :: Matrix a -> [a]
 bottomRow matrix = getRow 0 matrix
 
-leftColumn :: [[a]] -> [a]
+leftColumn :: Matrix a -> [a]
 leftColumn matrix = getColumn 0 matrix
 
-rightColumn :: [[a]] -> [a]
+rightColumn :: Matrix a -> [a]
 rightColumn matrix = getColumn 9 matrix
 
 allTransformations :: Matrix Char -> [Matrix Char]
@@ -77,11 +77,11 @@ findAllMatchingEdgePositions matrix1 matrix2 = do
 
 
 findMatchingEdgePositions :: Matrix Char -> Matrix Char -> [(Matrix Char, Matrix Char)]
-findMatchingEdgePositions matrix1 matrix2 = let
-  matchLeft = if (leftColumn matrix1 == rightColumn matrix2) then [(matrix1, matrix2)] else []
-  matchRight = if (rightColumn matrix1 == leftColumn matrix2) then [(matrix1, matrix2)] else []
-  matchTop = if (topRow matrix1 == bottomRow matrix2) then [(matrix1, matrix2)] else []
-  matchBottom = if (bottomRow matrix1 == topRow matrix2) then [(matrix1, matrix2)] else []
+findMatchingEdgePositions m1 m2 = let
+  matchLeft = if (leftColumn m1 == rightColumn m2) then [(m1, m2)] else []
+  matchRight = if (rightColumn m1 == leftColumn m2) then [(m1, m2)] else []
+  matchTop = if (topRow m1 == bottomRow m2) then [(m1, m2)] else []
+  matchBottom = if (bottomRow m1 == topRow m2) then [(m1, m2)] else []
   in
     matchLeft ++ matchRight ++ matchTop ++ matchBottom
 
@@ -91,6 +91,8 @@ main = do
   let linesOfFile = lines content
   let answer = solveIt linesOfFile
   print (length (findAllMatchingEdgePositions matrix1951 matrix1951))
+  print (length (findAllMatchingEdgePositions matrix1951 matrix2311))
+  print matrix2311
   printMatrix matrix2311
 
 
