@@ -1,7 +1,7 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 module MatrixUtil (Matrix(..), rotateMatrix, flipMatrixHorizontally, flipMatrixVertically, getRow, getColumn, printMatrix) where
 
-import Data.List (transpose, nub)
+import Data.List (transpose)
 
 data Matrix a = Matrix [[a]] deriving (Show, Eq)
 
