@@ -62,8 +62,58 @@ matrix1951 = Matrix
 tile1951 :: Tile
 tile1951 = Tile 1951 matrix1951
 
+tile2729 :: Tile
+tile2729 = Tile {
+  tileId = 2729,
+  tileMatrix = Matrix
+    [ "...#.#.#.#"
+    , "####.#...."
+    , "..#.#....."
+    , "....#..#.#"
+    , ".##..##.#."
+    , ".#.####..."
+    , "####.#.#.."
+    , "##.####..."
+    , "##..#.##.."
+    , "#.##...##."
+    ]
+}
+
+tile1427 :: Tile
+tile1427 = Tile {
+  tileId = 1427,
+  tileMatrix = Matrix
+    [ "###.##.#.."
+    , ".#..#.##.."
+    , ".#.##.#..#"
+    , "#.#.#.##.#"
+    , "....#...##"
+    , "...##..##."
+    , "...#.#####"
+    , ".#.####.#."
+    , "..#..###.#"
+    , "..##.#..#."
+    ]
+}
+
 solveIt :: [String] -> Answer
 solveIt input = input
+
+type PuzzleSolution = Matrix (Maybe Tile)
+
+solvePuzzle :: [Tile] -> Int -> [PuzzleSolution]
+solvePuzzle [] _ = []
+solvePuzzle (t : []) _ = [Matrix [[Just(t)]]]
+solvePuzzle (t : ts) length = do
+  puzzleSolution <- solvePuzzle ts length
+  let extendedPuzzleSolution = addTileToPuzzle t puzzleSolution
+  filter validPuzzleSolution extendedPuzzleSolution
+
+addTileToPuzzle :: Tile -> PuzzleSolution -> [PuzzleSolution]
+addTileToPuzzle tile puzzleSolution = [puzzleSolution]
+
+validPuzzleSolution :: PuzzleSolution -> Bool
+validPuzzleSolution puzzleSolution = True
 
 findAllMatchingEdgePositions :: Tile -> Tile -> [Match]
 findAllMatchingEdgePositions matrix1 matrix2 = do
@@ -94,14 +144,14 @@ findMatchingEdgePositions t1@(Tile _ m1) t2@(Tile _ m2) = let
   in
     matchLeft ++ matchRight ++ matchTop ++ matchBottom
 
-removeMatrix :: Tile -> Tile
-removeMatrix (Tile id _) = Tile id (Matrix [])
-
 matchWithoutMatrix :: Match -> Match
 matchWithoutMatrix (TopMatch t1 t2) = TopMatch (removeMatrix t1) (removeMatrix t2)
 matchWithoutMatrix (BottomMatch t1 t2) = BottomMatch (removeMatrix t1) (removeMatrix t2)
 matchWithoutMatrix (LeftMatch t1 t2) = LeftMatch (removeMatrix t1) (removeMatrix t2)
 matchWithoutMatrix (RightMatch t1 t2) = RightMatch (removeMatrix t1) (removeMatrix t2)
+
+removeMatrix :: Tile -> Tile
+removeMatrix (Tile id _) = Tile id (Matrix [])
 
 topRow :: Matrix a -> [a]
 topRow matrix = getRow 9 matrix
@@ -121,6 +171,7 @@ main = do
   let linesOfFile = lines content
   let answer = solveIt linesOfFile
 --  print (length (findAllMatchingEdgePositions matrix1951 matrix1951))
-  print (fmap matchWithoutMatrix (findAllMatchingEdgePositions tile1951 tile2311))
-  print (length (findAllMatchingEdgePositions tile1951 tile2311))
+  --print (fmap matchWithoutMatrix (findAllMatchingEdgePositions tile1951 tile2311))
+  --print (length (findAllMatchingEdgePositions tile1951 tile2311))
+  print (solvePuzzle [tile1951, tile1427, tile2729, tile2311] 2)
 
