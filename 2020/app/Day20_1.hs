@@ -56,6 +56,12 @@ leftColumn matrix = getColumn 0 matrix
 rightColumn :: Matrix a -> [a]
 rightColumn matrix = getColumn 9 matrix
 
+findAllMatchingEdgePositions :: Matrix Char -> Matrix Char -> [(Matrix Char, Matrix Char)]
+findAllMatchingEdgePositions matrix1 matrix2 = do
+    matrix1 <- allTransformations matrix1
+    matrix2 <- allTransformations matrix2
+    findMatchingEdgePositions matrix1 matrix2
+
 allTransformations :: Matrix Char -> [Matrix Char]
 allTransformations matrix =
   nub $
@@ -68,14 +74,7 @@ allTransformations matrix =
     , rotateMatrix (flipMatrixHorizontally matrix)
     , rotateMatrix (flipMatrixVertically matrix)
     ]
-
-findAllMatchingEdgePositions :: Matrix Char -> Matrix Char -> [(Matrix Char, Matrix Char)]
-findAllMatchingEdgePositions matrix1 matrix2 = do
-    matrix1 <- allTransformations matrix1
-    matrix2 <- allTransformations matrix2
-    findMatchingEdgePositions matrix1 matrix2
-
-
+    
 findMatchingEdgePositions :: Matrix Char -> Matrix Char -> [(Matrix Char, Matrix Char)]
 findMatchingEdgePositions m1 m2 = let
   matchLeft = if (leftColumn m1 == rightColumn m2) then [(m1, m2)] else []
