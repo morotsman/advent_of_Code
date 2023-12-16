@@ -65,18 +65,6 @@ tile1951 = Tile 1951 matrix1951
 solveIt :: [String] -> Answer
 solveIt input = input
 
-topRow :: Matrix a -> [a]
-topRow matrix = getRow 9 matrix
-
-bottomRow :: Matrix a -> [a]
-bottomRow matrix = getRow 0 matrix
-
-leftColumn :: Matrix a -> [a]
-leftColumn matrix = getColumn 0 matrix
-
-rightColumn :: Matrix a -> [a]
-rightColumn matrix = getColumn 9 matrix
-
 findAllMatchingEdgePositions :: Tile -> Tile -> [Match]
 findAllMatchingEdgePositions matrix1 matrix2 = do
     matrix1 <- allTransformations matrix1
@@ -115,6 +103,17 @@ matchWithoutMatrix (BottomMatch t1 t2) = BottomMatch (removeMatrix t1) (removeMa
 matchWithoutMatrix (LeftMatch t1 t2) = LeftMatch (removeMatrix t1) (removeMatrix t2)
 matchWithoutMatrix (RightMatch t1 t2) = RightMatch (removeMatrix t1) (removeMatrix t2)
 
+topRow :: Matrix a -> [a]
+topRow matrix = getRow 9 matrix
+
+bottomRow :: Matrix a -> [a]
+bottomRow matrix = getRow 0 matrix
+
+leftColumn :: Matrix a -> [a]
+leftColumn matrix = getColumn 0 matrix
+
+rightColumn :: Matrix a -> [a]
+rightColumn matrix = getColumn 9 matrix
 
 main :: IO ()
 main = do
