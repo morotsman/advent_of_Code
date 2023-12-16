@@ -11,7 +11,22 @@ data Tile = Tile {
   tileMatrix :: Matrix Char
 }
 
-data Match = Top | Bottom | Left | Right
+data Match = Top {
+    matrix1 :: Matrix Char,
+    matrix2 :: Matrix Char
+  }
+  | Bottom {
+    matrix1 :: Matrix Char,
+    matrix2 :: Matrix Char
+  }
+  | Left {
+    matrix1 :: Matrix Char,
+    matrix2 :: Matrix Char
+  }
+  | Right {
+    matrix1 :: Matrix Char,
+    matrix2 :: Matrix Char
+  }
 
 matrix2311 :: Matrix Char
 matrix2311 = Matrix
@@ -74,7 +89,7 @@ allTransformations matrix =
     , rotateMatrix (flipMatrixHorizontally matrix)
     , rotateMatrix (flipMatrixVertically matrix)
     ]
-    
+
 findMatchingEdgePositions :: Matrix Char -> Matrix Char -> [(Matrix Char, Matrix Char)]
 findMatchingEdgePositions m1 m2 = let
   matchLeft = if (leftColumn m1 == rightColumn m2) then [(m1, m2)] else []
