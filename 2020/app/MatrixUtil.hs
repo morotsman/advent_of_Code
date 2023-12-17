@@ -1,13 +1,13 @@
 {-# LANGUAGE ScopedTypeVariables #-}
-module MatrixUtil (Matrix(..), rotateMatrix, flipMatrixHorizontally, flipMatrixVertically, getRow, getColumn, printMatrix, matrixDimension) where
+module MatrixUtil (Matrix(..), MatrixDimension(..), rotateMatrix, flipMatrixHorizontally, flipMatrixVertically, getRow, getColumn, printMatrix, matrixDimension, elementAt) where
 
 import Data.List (transpose)
 
 data Matrix a = Matrix [[a]] deriving (Show, Eq)
 
 data MatrixDimension = MatrixDimension {
-  length :: Int,
-  height :: Int
+  matrixLength :: Int,
+  matrixHeight :: Int
 }
 
 rotateMatrix :: Matrix a -> Matrix a
@@ -34,3 +34,6 @@ printMatrix (Matrix matrix) = mapM_ putStrLn matrix
 
 matrixDimension :: Matrix a -> MatrixDimension
 matrixDimension (Matrix matrix) = MatrixDimension (length $ head matrix) (length matrix)
+
+elementAt :: Int -> Int -> Matrix a -> a
+elementAt x y (Matrix matrix) = (matrix !! y) !! x

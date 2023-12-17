@@ -2,31 +2,17 @@
 module Main where
 
 import Data.List (nub)
-import MatrixUtil (Matrix(..), rotateMatrix, flipMatrixHorizontally, flipMatrixVertically, getRow, getColumn, printMatrix)
+import MatrixUtil (Matrix(..), MatrixDimension(..), rotateMatrix, flipMatrixHorizontally, flipMatrixVertically, getRow, getColumn, printMatrix, matrixDimension, elementAt)
 
 type Answer = [String]
 
+type Position = (Int, Int)
+
 data Tile = Tile {
   tileId :: Int,
-  tileMatrix :: Matrix Char
+  tileMatrix :: Matrix Char,
+  position :: Maybe Position
 } deriving (Show, Eq)
-
-data Match = TopMatch {
-    tile1 :: Tile,
-    tile2 :: Tile
-  }
-  | BottomMatch {
-    matrix1 :: Tile,
-    matrix2 :: Tile
-  }
-  | LeftMatch {
-    matrix1 :: Tile,
-    matrix2 :: Tile
-  }
-  | RightMatch {
-    matrix1 :: Tile,
-    matrix2 :: Tile
-  } deriving (Show, Eq)
 
 matrix2311 :: Matrix Char
 matrix2311 = Matrix
@@ -43,7 +29,7 @@ matrix2311 = Matrix
          ]
 
 tile2311 :: Tile
-tile2311 = Tile 2311 matrix2311
+tile2311 = Tile 2311 matrix2311 Nothing
 
 matrix1951 :: Matrix Char
 matrix1951 = Matrix
@@ -60,7 +46,7 @@ matrix1951 = Matrix
          ]
 
 tile1951 :: Tile
-tile1951 = Tile 1951 matrix1951
+tile1951 = Tile 1951 matrix1951 Nothing
 
 tile2729 :: Tile
 tile2729 = Tile {
@@ -76,7 +62,8 @@ tile2729 = Tile {
     , "##.####..."
     , "##..#.##.."
     , "#.##...##."
-    ]
+    ],
+  position = Nothing
 }
 
 tile1427 :: Tile
@@ -93,7 +80,8 @@ tile1427 = Tile {
     , ".#.####.#."
     , "..#..###.#"
     , "..##.#..#."
-    ]
+    ],
+  position = Nothing
 }
 
 solveIt :: [String] -> Answer
@@ -103,26 +91,31 @@ type PuzzleSolution = Matrix (Maybe Tile)
 
 solvePuzzle :: [Tile] -> Int -> [PuzzleSolution]
 solvePuzzle [] _ = []
-solvePuzzle (t : []) _ = [Matrix [[Just(t)]]]
+solvePuzzle (t : []) _ = [Matrix [[Just(t { position = Just (0, 0) })]]]
 solvePuzzle (t : ts) length = do
   puzzleSolution <- solvePuzzle ts length
   let extendedPuzzleSolution = addTileToPuzzle t puzzleSolution
   filter validPuzzleSolution extendedPuzzleSolution
 
 addTileToPuzzle :: Tile -> PuzzleSolution -> [PuzzleSolution]
-addTileToPuzzle tile puzzleSolution = [puzzleSolution]
+addTileToPuzzle tile puzzleSolution = do
+    let puzzleDimension = matrixDimension puzzleSolution
+    x <- [0..(matrixLength puzzleDimension - 1)]
+    y <- [0..(matrixHeight puzzleDimension - 1)]
+    let solutionTile :: Maybe Tile = elementAt x y puzzleSolution
+    [puzzleSolution]
 
 validPuzzleSolution :: PuzzleSolution -> Bool
 validPuzzleSolution puzzleSolution = True
 
-findAllMatchingEdgePositions :: Tile -> Tile -> [Match]
+findAllMatchingEdgePositions :: Tile -> Tile -> [(Tile, Tile)]
 findAllMatchingEdgePositions matrix1 matrix2 = do
     matrix1 <- allTransformations matrix1
     matrix2 <- allTransformations matrix2
     findMatchingEdgePositions matrix1 matrix2
 
 allTransformations :: Tile -> [Tile]
-allTransformations t@(Tile _ matrix) = let
+allTransformations t@(Tile _ matrix _) = let
   transformations = nub $
     [ matrix
     , rotateMatrix matrix
@@ -135,23 +128,18 @@ allTransformations t@(Tile _ matrix) = let
     ]
   in fmap (\m -> t { tileMatrix = m }) transformations
 
-findMatchingEdgePositions :: Tile -> Tile -> [Match]
-findMatchingEdgePositions t1@(Tile _ m1) t2@(Tile _ m2) = let
-  matchLeft = if (leftColumn m1 == rightColumn m2) then [LeftMatch t1 t2] else []
-  matchRight = if (rightColumn m1 == leftColumn m2) then [RightMatch t1 t2] else []
-  matchTop = if (topRow m1 == bottomRow m2) then [TopMatch t1 t2] else []
-  matchBottom = if (bottomRow m1 == topRow m2) then [BottomMatch t1 t2] else []
+findMatchingEdgePositions :: Tile -> Tile -> [(Tile, Tile)]
+findMatchingEdgePositions t1@(Tile _ m1 Nothing) _ = []
+findMatchingEdgePositions t1@(Tile _ m1 (Just(x, y))) t2@(Tile _ m2 _) = let
+  matchLeft = if (leftColumn m1 == rightColumn m2) then [(t1, (t2 { position = Just (x - 1, y) }))] else []
+  matchRight = if (rightColumn m1 == leftColumn m2) then [(t1, (t2 { position = Just (x + 1, y) }))] else []
+  matchTop = if (topRow m1 == bottomRow m2) then [(t1, (t2 { position = Just (x, y + 1) }))] else []
+  matchBottom = if (bottomRow m1 == topRow m2) then [(t1, (t2 { position = Just (x, y - 1) }))] else []
   in
     matchLeft ++ matchRight ++ matchTop ++ matchBottom
 
-matchWithoutMatrix :: Match -> Match
-matchWithoutMatrix (TopMatch t1 t2) = TopMatch (removeMatrix t1) (removeMatrix t2)
-matchWithoutMatrix (BottomMatch t1 t2) = BottomMatch (removeMatrix t1) (removeMatrix t2)
-matchWithoutMatrix (LeftMatch t1 t2) = LeftMatch (removeMatrix t1) (removeMatrix t2)
-matchWithoutMatrix (RightMatch t1 t2) = RightMatch (removeMatrix t1) (removeMatrix t2)
-
 removeMatrix :: Tile -> Tile
-removeMatrix (Tile id _) = Tile id (Matrix [])
+removeMatrix t@(Tile id _ position) = t { tileMatrix = Matrix [] }
 
 topRow :: Matrix a -> [a]
 topRow matrix = getRow 9 matrix
