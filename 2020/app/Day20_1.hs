@@ -2,7 +2,10 @@
 module Main where
 
 import Data.List (nub)
+import Data.Maybe (fromJust, isJust)
 import MatrixUtil (Matrix(..), MatrixDimension(..), rotateMatrix, flipMatrixHorizontally, flipMatrixVertically, getRow, getColumn, printMatrix, matrixDimension, elementAt)
+import Debug.Trace (trace)
+import qualified Data.Map as Map
 
 type Answer = [String]
 
@@ -14,105 +17,71 @@ data Tile = Tile {
   position :: Maybe Position
 } deriving (Show, Eq)
 
-matrix2311 :: Matrix Char
-matrix2311 = Matrix
-          ["..##.#..#."
-         , "##..#....."
-         , "#...##..#."
-         , "####.#...#"
-         , "##.##.###."
-         , "##...#.###"
-         , ".#.#.#..##"
-         , "..#....#.."
-         , "###...#.#."
-         , "..###..###"
-         ]
+type PuzzleSolution = Map.Map Position Tile
 
-tile2311 :: Tile
-tile2311 = Tile 2311 matrix2311 Nothing
+solvePuzzle :: PuzzleSolution -> [Tile] -> Int -> [PuzzleSolution]
+solvePuzzle puzzleSolution (tile : []) _ = addTileToPuzzle tile puzzleSolution
+solvePuzzle puzzleSolution tiles matrixLength = let
+  extendedPuzzleSolutions :: [PuzzleSolution] = concatMap (\t -> addTileToPuzzle t puzzleSolution) tiles
+  puzzlesWihPossibleExtensionTiles :: [(PuzzleSolution, [Tile])] = fmap (\ps -> (ps, tilesNotInSolution ps tiles)) extendedPuzzleSolutions
+  possibleExtensions :: [PuzzleSolution] = map (\(p, t) -> p)  (filter (\(_, t) -> (length tiles) > (length t)) puzzlesWihPossibleExtensionTiles)
+  possibleExtensions2 :: [PuzzleSolution] = (filter (validPuzzleSolution matrixLength) possibleExtensions)
+  in
+    concatMap (\ps -> solvePuzzle ps (tilesNotInSolution ps tiles) matrixLength) possibleExtensions2
 
-matrix1951 :: Matrix Char
-matrix1951 = Matrix
-  [        "#.##...##."
-         , "#.####...#"
-         , ".....#..##"
-         , "#...######"
-         , ".##.#....#"
-         , ".###.#####"
-         , "###.##.##."
-         , ".###....#."
-         , "..#.#..#.#"
-         , "#...##.#.."
-         ]
+validPuzzleSolution :: Int -> PuzzleSolution -> Bool
+validPuzzleSolution matrixLength puzzleSolution = let
+  (solutionLength, solutionHeight) = getPuzzleDimension puzzleSolution
+  in solutionLength <= matrixLength && solutionHeight <= matrixLength
 
-tile1951 :: Tile
-tile1951 = Tile 1951 matrix1951 Nothing
+getPuzzleDimension :: PuzzleSolution -> (Int, Int)
+getPuzzleDimension puzzleSolution = let
+  tiles = Map.elems puzzleSolution
+  positions = fmap (\tile -> fromJust (position tile)) tiles
+  xPositions = fmap (\(x, _) -> x) positions
+  yPositions = fmap (\(_, y) -> y) positions
+  minX = minimum xPositions
+  maxX = maximum xPositions
+  minY = minimum yPositions
+  maxY = maximum yPositions
+  in (maxX - minX, maxY - minY)
 
-tile2729 :: Tile
-tile2729 = Tile {
-  tileId = 2729,
-  tileMatrix = Matrix
-    [ "...#.#.#.#"
-    , "####.#...."
-    , "..#.#....."
-    , "....#..#.#"
-    , ".##..##.#."
-    , ".#.####..."
-    , "####.#.#.."
-    , "##.####..."
-    , "##..#.##.."
-    , "#.##...##."
-    ],
-  position = Nothing
-}
 
-tile1427 :: Tile
-tile1427 = Tile {
-  tileId = 1427,
-  tileMatrix = Matrix
-    [ "###.##.#.."
-    , ".#..#.##.."
-    , ".#.##.#..#"
-    , "#.#.#.##.#"
-    , "....#...##"
-    , "...##..##."
-    , "...#.#####"
-    , ".#.####.#."
-    , "..#..###.#"
-    , "..##.#..#."
-    ],
-  position = Nothing
-}
-
-solveIt :: [String] -> Answer
-solveIt input = input
-
-type PuzzleSolution = Matrix (Maybe Tile)
-
-solvePuzzle :: [Tile] -> Int -> [PuzzleSolution]
-solvePuzzle [] _ = []
-solvePuzzle (t : []) _ = [Matrix [[Just(t { position = Just (0, 0) })]]]
-solvePuzzle (t : ts) length = do
-  puzzleSolution <- solvePuzzle ts length
-  let extendedPuzzleSolution = addTileToPuzzle t puzzleSolution
-  filter validPuzzleSolution extendedPuzzleSolution
+tilesNotInSolution :: PuzzleSolution -> [Tile] -> [Tile]
+tilesNotInSolution  puzzleSolution tiles = filter (\t -> not $ tileAlreadyInSolution puzzleSolution t) tiles
 
 addTileToPuzzle :: Tile -> PuzzleSolution -> [PuzzleSolution]
-addTileToPuzzle tile puzzleSolution = do
-    let puzzleDimension = matrixDimension puzzleSolution
-    x <- [0..(matrixLength puzzleDimension - 1)]
-    y <- [0..(matrixHeight puzzleDimension - 1)]
-    let solutionTile :: Maybe Tile = elementAt x y puzzleSolution
-    [puzzleSolution]
+addTileToPuzzle tileToAdd puzzleSolution | Map.null puzzleSolution = [getInitialSolution tileToAdd]
+addTileToPuzzle tileToAdd puzzleSolution = let
+    tilesInSolution = Map.elems puzzleSolution
+    matchingTiles :: [(Tile, Tile)] = concatMap (\tile -> findAllMatchingEdgePositions tile tileToAdd) tilesInSolution
+    result = fmap (\(t1, t2) -> insertTile puzzleSolution t2) matchingTiles
+    in
+    --trace(
+    --"\naddTileToPuzzle: \ntileToAdd: " ++ show tileToAdd ++
+    --"\npuzzleSolution: " ++ show puzzleSolution ++
+    --"\nmatchingTiles: " ++ (show (fmap (\(t1, t2) -> "(" ++ "one: " ++ show t1 ++ ", two: " ++ show t2 ++ ")") matchingTiles)) ++
+    --"\nresult: " ++ show result ++ "\n"
+    --)
+    result
 
-validPuzzleSolution :: PuzzleSolution -> Bool
-validPuzzleSolution puzzleSolution = True
+getInitialSolution :: Tile -> PuzzleSolution
+getInitialSolution tile = Map.singleton (0, 0) (tile { position = Just (0, 0) })
+
+insertTile :: PuzzleSolution -> Tile -> PuzzleSolution
+insertTile puzzleSolution t@(Tile _ _ Nothing) = puzzleSolution
+insertTile puzzleSolution t@(Tile _ _ (Just(position))) | isJust $ Map.lookup position puzzleSolution = puzzleSolution
+                                                        | otherwise = Map.insert position t puzzleSolution
+
+tileAlreadyInSolution :: PuzzleSolution -> Tile -> Bool
+tileAlreadyInSolution puzzleSolution tile = let
+  tiles = Map.elems puzzleSolution
+  in any (\t -> tileId t == tileId tile) tiles
 
 findAllMatchingEdgePositions :: Tile -> Tile -> [(Tile, Tile)]
-findAllMatchingEdgePositions matrix1 matrix2 = do
-    matrix1 <- allTransformations matrix1
-    matrix2 <- allTransformations matrix2
-    findMatchingEdgePositions matrix1 matrix2
+findAllMatchingEdgePositions tile tileToAdd = do
+    transformed2 <- allTransformations tileToAdd
+    findMatchingEdgePositions tile transformed2
 
 allTransformations :: Tile -> [Tile]
 allTransformations t@(Tile _ matrix _) = let
@@ -135,14 +104,18 @@ findMatchingEdgePositions t1@(Tile _ m1 (Just(x, y))) t2@(Tile _ m2 _) = let
   matchRight = if (rightColumn m1 == leftColumn m2) then [(t1, (t2 { position = Just (x + 1, y) }))] else []
   matchTop = if (topRow m1 == bottomRow m2) then [(t1, (t2 { position = Just (x, y + 1) }))] else []
   matchBottom = if (bottomRow m1 == topRow m2) then [(t1, (t2 { position = Just (x, y - 1) }))] else []
+  result = matchLeft ++ matchRight ++ matchTop ++ matchBottom
   in
-    matchLeft ++ matchRight ++ matchTop ++ matchBottom
+    --trace("\nfindMatchingEdgePositions: " ++ (show (fmap (\(t1, t2) -> "(" ++ show t1 ++ ", " ++ show t2 ++ ")") result)))
+    result
 
 removeMatrix :: Tile -> Tile
 removeMatrix t@(Tile id _ position) = t { tileMatrix = Matrix [] }
 
 topRow :: Matrix a -> [a]
-topRow matrix = getRow 9 matrix
+topRow matrix = let
+  (MatrixDimension length _) = matrixDimension matrix
+  in getRow (length-1) matrix
 
 bottomRow :: Matrix a -> [a]
 bottomRow matrix = getRow 0 matrix
@@ -151,15 +124,99 @@ leftColumn :: Matrix a -> [a]
 leftColumn matrix = getColumn 0 matrix
 
 rightColumn :: Matrix a -> [a]
-rightColumn matrix = getColumn 9 matrix
+rightColumn matrix = let
+  (MatrixDimension length _) = matrixDimension matrix
+  in getColumn (length-1) matrix
+
+printSolution :: PuzzleSolution -> [(Int, Position)]
+printSolution puzzleSolution = let
+  tiles = Map.elems puzzleSolution
+  positions = fmap (\tile -> (tileId tile, fromJust (position tile))) tiles
+  in positions
+
+tileWithoutMatrix :: Tile -> Tile
+tileWithoutMatrix t@(Tile id _ position) = t { tileMatrix = Matrix [] }
+
+toTile :: [String] -> Tile
+toTile (idLine : matrixLines) = let
+  id = read $ take 4 $ drop 5 idLine
+  matrix = Matrix matrixLines
+  in Tile id matrix Nothing
+
+parseTiles :: Int -> [String] -> [Tile]
+parseTiles size [] = []
+parseTiles size (idLine : lines) = let
+  id = read (parseId idLine)
+  matrixLines = take size lines
+  matrix = Matrix matrixLines
+  in (Tile id matrix Nothing) : parseTiles size (drop (size+1) lines)
+
+parseId :: String -> String
+parseId idLine = let
+  result = take 4 $ drop 5 idLine
+  in trace("id: " ++ result) result
+
+smallExample :: [String] = [
+  "Tile 1111:",
+  "aaa",
+  "aaa",
+  "bab",
+  "",
+  "Tile 2222:",
+  "bab",
+  "bbb",
+  "c1c",
+  "",
+  "Tile 3333:",
+  "c1c",
+  "ccc",
+  "dcd",
+  ""
+  ]
+
+smallExample2 :: [String] = [
+  "Tile 1111:",
+  "aaa",
+  "aaa",
+  "bab",
+  "",
+  "Tile 2222:",
+  "bab",
+  "bbb",
+  "c1c",
+  ""
+  ]
 
 main :: IO ()
 main = do
   content <- readFile "/Users/niklasleopold/workspace/advent_of_Code/2020/app/Day20_example.txt"
+  --content <- readFile "/Users/niklasleopold/workspace/advent_of_Code/2020/app/Day20_input.txt"
   let linesOfFile = lines content
-  let answer = solveIt linesOfFile
---  print (length (findAllMatchingEdgePositions matrix1951 matrix1951))
-  --print (fmap matchWithoutMatrix (findAllMatchingEdgePositions tile1951 tile2311))
-  --print (length (findAllMatchingEdgePositions tile1951 tile2311))
-  print (solvePuzzle [tile1951, tile1427, tile2729, tile2311] 2)
+
+  let tiles = parseTiles 10 linesOfFile
+  --print ("tiles: " ++ show (length tiles))
+
+
+  print ("tiles: " ++ show tiles)
+  let solution :: PuzzleSolution = head (solvePuzzle Map.empty tiles 3)
+  print ("final result: " ++ show (printSolution solution))
+
+
+
+  --let tiles = parseTiles 3 smallExample
+  --let solutions1 :: [PuzzleSolution] = addTileToPuzzle (tiles !! 0) Map.empty
+  --print ("solution1: " ++ show solutions1)
+  --let solutions2 :: [PuzzleSolution]  = concatMap (\s -> addTileToPuzzle (tiles !! 1) s) solutions1
+  --print ("solution2: " ++ show solutions2)
+  --let solutions3 = concatMap (\s -> addTileToPuzzle (tiles !! 2) s) solutions2
+  --print ("solution3: " ++ show (solutions3))
+
+  --let tiles = parseTiles 3 smallExample
+  --let solutions = solvePuzzle Map.empty tiles 2
+  --print ("\n final result: " ++ show solutions)
+  --print("hepp")
+
+
+
+
 

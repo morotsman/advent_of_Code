@@ -35,5 +35,11 @@ printMatrix (Matrix matrix) = mapM_ putStrLn matrix
 matrixDimension :: Matrix a -> MatrixDimension
 matrixDimension (Matrix matrix) = MatrixDimension (length $ head matrix) (length matrix)
 
-elementAt :: Int -> Int -> Matrix a -> a
-elementAt x y (Matrix matrix) = (matrix !! y) !! x
+outOfBoundary :: Int -> Int -> Matrix a -> Bool
+outOfBoundary x y matrix = let
+  (MatrixDimension length width) = matrixDimension matrix
+  in x < 0 || x >= length || y < 0 || y >= width
+
+elementAt :: Matrix a -> Int -> Int -> Maybe a
+elementAt m@(Matrix matrix) x y | outOfBoundary x y m = Nothing
+                                | otherwise = Just ((matrix !! y) !! x)
