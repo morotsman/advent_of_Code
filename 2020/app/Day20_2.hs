@@ -191,15 +191,15 @@ countSeaMonsters puzzleSolution = let
 
 countSeaMonsters' :: Matrix Char -> [[Char]] -> Int -> Int
 countSeaMonsters' (Matrix []) rows total | length rows < 3 = 0
-countSeaMonsters' (Matrix []) rows total = total + findSeaMonster2 rows
+countSeaMonsters' (Matrix []) rows total = total + findSeaMonster rows
 countSeaMonsters' (Matrix (r:rs)) rows total | length rows < 3 = countSeaMonsters' (Matrix rs) (rows ++ [r]) total
 countSeaMonsters' (Matrix (r:rs)) rows total = let
-  seaMonsterCount = findSeaMonster2 rows
+  seaMonsterCount = findSeaMonster rows
   toInvestigate = (drop 1 rows) ++ [r]
   in countSeaMonsters' (Matrix rs) toInvestigate (total + seaMonsterCount)
 
-findSeaMonster2 :: [[Char]] -> Int
-findSeaMonster2 rows = let
+findSeaMonster :: [[Char]] -> Int
+findSeaMonster rows = let
   middlePattern = "(#....##....##....###)"
   bottomPattern = "(#..#..#..#..#..#...)"
   topPattern = "(#)"
@@ -209,8 +209,6 @@ findSeaMonster2 rows = let
   monsters = filter (\index -> Set.member (index + 1) bottomIndexes && Set.member (index + 18) topIndexes) matchMiddleIndexes
   in length monsters
 
-
-
 countBrackets :: String -> Int
 countBrackets [] = 0
 countBrackets (c:cs) | c == '#' = 1 + countBrackets cs
@@ -219,19 +217,6 @@ countBrackets (c:cs) | c == '#' = 1 + countBrackets cs
 countBracketsInRows :: [[Char]] -> Int
 countBracketsInRows [] = 0
 countBracketsInRows (r:rs) = countBrackets r + countBracketsInRows rs
-
-smallImage :: Matrix Char = Matrix [
-  ".#.#...#.###...#.##.##.....#.#...#.###...#.##.##",
-  "#.#.##.###.#.##.##.###...#.#.##.###.#.##.##.###.",
-  "..##.###.####..#.####......##.###.####..#.####."
- ]
-
-findAllMatches :: String -> String -> [String]
-findAllMatches _ "" = []
-findAllMatches pattern input =
-    case input =~ pattern :: (String, String, String, [String]) of
-        (_, _, post, [match]) -> match : findAllMatches pattern post
-        _                     -> []
 
 findAllMatchIndexes :: String -> String -> Int -> [Int]
 findAllMatchIndexes _ "" _ = []
