@@ -205,13 +205,15 @@ findSeaMonster2 rows = let
   topPattern = "(#)"
   matchMiddleIndexes = findAllMatchIndexes middlePattern (rows !! 1) 0
   bottomIndexes = Set.fromList $ findAllMatchIndexes bottomPattern (rows !! 2) 0
-  topIndexes = Set.fromList $ filter (\index -> ((rows !! 0) !! index) == '#') $ fmap (\middleIndex -> middleIndex + 19) matchMiddleIndexes
-  monsters = filter (\index -> Set.member (index + 1) bottomIndexes && Set.member (index + 19) topIndexes) matchMiddleIndexes
+  topIndexes = Set.fromList $ filter (\index -> ((rows !! 0) !! index) == '#') $ fmap (\middleIndex -> middleIndex + 18) matchMiddleIndexes
+  monsters = filter (\index -> Set.member (index + 1) bottomIndexes && Set.member (index + 18) topIndexes) matchMiddleIndexes
   in
-    --trace("matchMiddleIndexes: " ++ show matchMiddleIndexes)
-    --trace("matchBottomIndexes: " ++ show matchBottomIndexes)
-    --trace("topIndexes: " ++ show topIndexes)
-    --trace("monster: " ++ show monsters)
+    trace("------------------")
+    trace("matchMiddleIndexes: " ++ show matchMiddleIndexes)
+    trace("matchBottomIndexes: " ++ show bottomIndexes)
+    trace("topIndexes: " ++ show topIndexes)
+    trace("monster: " ++ show (length monsters))
+    trace("------------------")
     length monsters
 
 
@@ -261,6 +263,12 @@ main = do
   let numberFound = countSeaMonsters solution
   print("numberFound: " ++ show numberFound)
   print ("roughness: " ++ show (calculateRoughness solution))
+
+
+  let image = puzzleSolutionToMatrix solution
+  let images = fmap (\t -> tileMatrix t) (allTransformations (Tile 0 image Nothing))
+  let results = countSeaMonsters' (images !! 1) [] 0
+  print ("results: " ++ show results)
 
   --print("----------")
   --print ("total: " ++ show (countSeaMonsters' smallImage [] 0))
