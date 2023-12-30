@@ -187,7 +187,7 @@ countSeaMonsters puzzleSolution = let
   image = puzzleSolutionToMatrix puzzleSolution
   images = fmap (\t -> tileMatrix t) (allTransformations (Tile 0 image Nothing))
   results = fmap (\image -> countSeaMonsters' image [] 0) images
-  in trace(show results) maximum results
+  in maximum results
 
 countSeaMonsters' :: Matrix Char -> [[Char]] -> Int -> Int
 countSeaMonsters' (Matrix []) rows total | length rows < 3 = 0
@@ -205,16 +205,9 @@ findSeaMonster2 rows = let
   topPattern = "(#)"
   matchMiddleIndexes = findAllMatchIndexes middlePattern (rows !! 1) 0
   bottomIndexes = Set.fromList $ findAllMatchIndexes bottomPattern (rows !! 2) 0
-  topIndexes = Set.fromList $ filter (\index -> ((rows !! 0) !! index) == '#') $ fmap (\middleIndex -> middleIndex + 18) matchMiddleIndexes
+  topIndexes = Set.fromList $ filter (\index -> if (index >= length (rows !! 0)) then False else ((rows !! 0) !! index) == '#') $ fmap (\middleIndex -> middleIndex + 18) matchMiddleIndexes
   monsters = filter (\index -> Set.member (index + 1) bottomIndexes && Set.member (index + 18) topIndexes) matchMiddleIndexes
-  in
-    trace("------------------")
-    trace("matchMiddleIndexes: " ++ show matchMiddleIndexes)
-    trace("matchBottomIndexes: " ++ show bottomIndexes)
-    trace("topIndexes: " ++ show topIndexes)
-    trace("monster: " ++ show (length monsters))
-    trace("------------------")
-    length monsters
+  in length monsters
 
 
 
@@ -242,13 +235,14 @@ findAllMatches pattern input =
 
 findAllMatchIndexes :: String -> String -> Int -> [Int]
 findAllMatchIndexes _ "" _ = []
-findAllMatchIndexes pattern input startIndex =
+findAllMatchIndexes pattern input@(i:is) startIndex =
     case input =~ pattern :: (String, String, String, [String]) of
         (pre, match, post, _) ->
-            if (length match) == 0 then []
-            else
-              let currentIndex = startIndex + length pre
-              in currentIndex : findAllMatchIndexes pattern post (length pre + length match)
+            if not (startsWithPattern input pattern) then findAllMatchIndexes pattern is (startIndex + 1)
+            else startIndex : findAllMatchIndexes pattern is (startIndex + 1)
+
+startsWithPattern :: String -> String -> Bool
+startsWithPattern input pattern = input =~ ("^" ++ pattern) :: Bool
 
 main :: IO ()
 main = do
@@ -260,29 +254,7 @@ main = do
   let solution :: PuzzleSolution = head (solvePuzzle Map.empty tiles 12)
   print("Solved puzzle")
 
-  let numberFound = countSeaMonsters solution
-  print("numberFound: " ++ show numberFound)
   print ("roughness: " ++ show (calculateRoughness solution))
-
-
-  let image = puzzleSolutionToMatrix solution
-  let images = fmap (\t -> tileMatrix t) (allTransformations (Tile 0 image Nothing))
-  let results = countSeaMonsters' (images !! 1) [] 0
-  print ("results: " ++ show results)
-
-  --print("----------")
-  --print ("total: " ++ show (countSeaMonsters' smallImage [] 0))
-
-  --let example = "#.#.##.###.#.##.##.######.#.##.###.#.##.##.#####"
-  --let pattern = "(#....##....##....###)"
-
-  --let matches = findAllMatches pattern example
-  --print ("findAllMatches: " ++ show matches)
-
-  --let matchIndexes = findAllMatchIndexes pattern example 0
-  --print ("matchIndexes: " ++ show matchIndexes)
-
-  --print (show (findSeaMonster2 $ matrixValues smallImage))
 
 
 
