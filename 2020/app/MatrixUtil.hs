@@ -1,5 +1,5 @@
 {-# LANGUAGE ScopedTypeVariables #-}
-module MatrixUtil (Matrix(..), MatrixDimension(..), rotateMatrix, flipMatrixHorizontally, flipMatrixVertically, getRow, getColumn, printMatrix, matrixDimension, elementAt) where
+module MatrixUtil (Matrix(..), MatrixDimension(..), rotateMatrix, flipMatrixHorizontally, flipMatrixVertically, getRow, getColumn, printMatrix, matrixDimension, elementAt, matrixValues) where
 
 import Data.List (transpose)
 
@@ -9,6 +9,9 @@ data MatrixDimension = MatrixDimension {
   matrixLength :: Int,
   matrixHeight :: Int
 }
+
+matrixValues :: Matrix a -> [[a]]
+matrixValues (Matrix matrix) = matrix
 
 rotateMatrix :: Matrix a -> Matrix a
 rotateMatrix (Matrix matrix) = Matrix (transpose . reverse $ matrix)
