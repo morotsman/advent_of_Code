@@ -1,0 +1,37 @@
+cabal-version:      2.4
+name:               x2020
+version:            0.1.0.0
+
+author:             Niklas Leopold
+maintainer:         leopold.niklas@gmail.com
+
+extra-source-files: CHANGELOG.md
+
+executable x2020
+    main-is:          Day21_1_main.hs
+
+    other-modules:
+        Day21_1
+    -- LANGUAGE extensions used by modules in this package.
+    -- other-extensions:
+    build-depends:
+        base ^>=4.17.2.0,
+        split,
+        containers,
+        lens,
+        parallel,
+        vector,
+        regex-tdfa
+    hs-source-dirs:   app
+    default-language: Haskell2010
+
+test-suite tests
+  type: exitcode-stdio-1.0
+  main-is: Spec.hs
+  other-modules:
+      Day21_1
+  build-depends:
+      base ^>=4.17.2.0,
+      HUnit
+  hs-source-dirs:   test
+  default-language: Haskell2010
