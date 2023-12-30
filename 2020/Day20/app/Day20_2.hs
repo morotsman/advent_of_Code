@@ -232,7 +232,7 @@ startsWithPattern input pattern = input =~ ("^" ++ pattern) :: Bool
 main :: IO ()
 main = do
   --content <- readFile "/Users/niklasleopold/workspace/advent_of_Code/2020/app/Day20_example.txt"
-  content <- readFile "/Users/niklasleopold/workspace/advent_of_Code/2020/app/Day20_input.txt"
+  content <- readFile "/Users/niklasleopold/workspace/advent_of_Code/2020/Day20/app/Day20_input.txt"
   let linesOfFile = lines content
   let tiles = parseTiles 10 linesOfFile
   --let solution :: PuzzleSolution = head (solvePuzzle Map.empty tiles 3)

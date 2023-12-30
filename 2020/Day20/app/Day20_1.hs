@@ -189,32 +189,17 @@ smallExample2 :: [String] = [
 
 main :: IO ()
 main = do
-  content <- readFile "/Users/niklasleopold/workspace/advent_of_Code/2020/app/Day20_example.txt"
+  content <- readFile "/Users/niklasleopold/workspace/advent_of_Code/2020/Day20/app/Day20_example.txt"
   --content <- readFile "/Users/niklasleopold/workspace/advent_of_Code/2020/app/Day20_input.txt"
   let linesOfFile = lines content
 
   let tiles = parseTiles 10 linesOfFile
-  --print ("tiles: " ++ show (length tiles))
 
 
   print ("tiles: " ++ show tiles)
   let solution :: PuzzleSolution = head (solvePuzzle Map.empty tiles 3)
   print ("final result: " ++ show (printSolution solution))
 
-
-
-  --let tiles = parseTiles 3 smallExample
-  --let solutions1 :: [PuzzleSolution] = addTileToPuzzle (tiles !! 0) Map.empty
-  --print ("solution1: " ++ show solutions1)
-  --let solutions2 :: [PuzzleSolution]  = concatMap (\s -> addTileToPuzzle (tiles !! 1) s) solutions1
-  --print ("solution2: " ++ show solutions2)
-  --let solutions3 = concatMap (\s -> addTileToPuzzle (tiles !! 2) s) solutions2
-  --print ("solution3: " ++ show (solutions3))
-
-  --let tiles = parseTiles 3 smallExample
-  --let solutions = solvePuzzle Map.empty tiles 2
-  --print ("\n final result: " ++ show solutions)
-  --print("hepp")
 
 
 
