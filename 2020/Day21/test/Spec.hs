@@ -1,21 +1,34 @@
+module Main where
+
+import Test.Framework
+import Test.Framework.Providers.HUnit
 import Test.HUnit
+import Day211 (toFood, Food(..))
 
--- Import the module containing the toFood function
-import Day21_1 (toFood, Food(..))
 
--- Define test cases
-testToFood :: Test
-testToFood = test
-  [ "toFood should parse ingredients and allergens correctly" ~:
-    do
-      let input = ("eggs milk peanuts", "(contains dairy nuts)")
-      let expectedOutput = Food ["eggs", "milk", "peanuts"] ["dairy", "nuts"]
-      assertEqual "Test Case 1" expectedOutput (toFood input)
+testFood = TestCase $ assertEqual "toFood should parse ingredients and allergens correctly"
+    (Food ["eggs", "milk", "peanuts"] ["dairy", "nuts"]) (toFood ("eggs milk peanuts", "(contains dairy nuts)"))
 
-    -- Add more test cases as needed
-  ]
+-- hUnitTestToTests: Adapt an existing HUnit test into a list of test-framework tests
+tests = hUnitTestToTests $ TestList [TestLabel "testFood" testFood]
 
--- Run the test suite
-main :: IO ()
-main = do
-  runTestTT testToFood
+main = defaultMain tests
+
+--import Day211 (toFood, Food(..))
+--
+---- Define test cases
+--testToFood :: Test
+--testToFood = test
+--  [ "toFood should parse ingredients and allergens correctly" ~:
+--    do
+--      let input = ("eggs milk peanuts", "(contains dairy nuts)")
+--      let expectedOutput = Food ["eggs", "milk", "peanuts"] ["dairy", "nuts"]
+--      assertEqual "Test Case 1" expectedOutput (toFood input)
+--
+--    -- Add more test cases as needed
+--  ]
+--
+---- Run the test suite
+--main :: IO Counts
+--main = do
+--  runTestTT testToFood

@@ -1,7 +1,7 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 module Main where
 
-import Day21_1 (parseRows, toFood, Food(..))
+import Day211 (parseRows, toFood, Food(..))
 
 main :: IO ()
 main = do

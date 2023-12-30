@@ -1,5 +1,5 @@
 {-# LANGUAGE ScopedTypeVariables #-}
-module Day21_1 (parseRows, toFood, Food(..)) where
+module Day211 (parseRows, toFood, Food(..)) where
 
 import Data.List (elemIndex)
 import Data.Maybe (isJust, fromJust)

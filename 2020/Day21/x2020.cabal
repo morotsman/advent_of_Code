@@ -7,11 +7,23 @@ maintainer:         leopold.niklas@gmail.com
 
 extra-source-files: CHANGELOG.md
 
+library day-lib
+    exposed-modules: Day211
+    hs-source-dirs: lib
+    build-depends:
+        base ^>=4.17.2.0,
+        split,
+        containers,
+        lens,
+        parallel,
+        vector,
+        regex-tdfa
+    default-language: Haskell2010
+
+
 executable x2020
     main-is:          Day21_1_main.hs
-
     other-modules:
-        Day21_1
     -- LANGUAGE extensions used by modules in this package.
     -- other-extensions:
     build-depends:
@@ -21,7 +33,8 @@ executable x2020
         lens,
         parallel,
         vector,
-        regex-tdfa
+        regex-tdfa,
+        day-lib
     hs-source-dirs:   app
     default-language: Haskell2010
 
@@ -29,9 +42,11 @@ test-suite tests
   type: exitcode-stdio-1.0
   main-is: Spec.hs
   other-modules:
-      Day21_1
   build-depends:
       base ^>=4.17.2.0,
-      HUnit
+      test-framework,
+      test-framework-hunit,
+      HUnit,
+      day-lib
   hs-source-dirs:   test
   default-language: Haskell2010
