@@ -5,7 +5,7 @@ import Test.Framework.Providers.HUnit
 import Test.HUnit
 import qualified Data.Set as Set
 import qualified Data.Map as Map
-import Day (scoreGame, Player(..), parseRows)
+import Day (getPlayers, playGame, scoreGame, Player(..), parseRows)
 
 testParseRows = TestCase $ do
   let input = [
@@ -48,7 +48,7 @@ testScoreGame = TestCase $ do
         ]
   let expected = 306
   let actual = scoreGame $ playGame $ getPlayers input
-  assertEqual "" expected actual
+  assertEqual "The correct score should be 306" expected actual
 
 -- hUnitTestToTests: Adapt an existing HUnit test into a list of test-framework tests
 tests = hUnitTestToTests $ TestList [

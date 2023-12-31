@@ -1,5 +1,5 @@
 {-# LANGUAGE ScopedTypeVariables #-}
-module Day (scoreGame, playGame, getPlayers, Player(..)) where
+module Day (parseRows, scoreGame, playGame, getPlayers, Player(..)) where
 
 data Player = Player {
   name :: String,
@@ -31,8 +31,8 @@ playRound (Player name1 deck1, Player name2 deck2) = let
   card1 = head deck1
   card2 = head deck2
   in if card1 > card2
-    then (Player name1 (tail deck1 ++ [card1, card2]), Player "" (tail deck2))
-    else (Player name2 (tail deck1), Player "" (tail deck2 ++ [card2, card1]))
+    then (Player name1 (tail deck1 ++ [card1, card2]), Player name2 (tail deck2))
+    else (Player name1 (tail deck1), Player name2 (tail deck2 ++ [card2, card1]))
 
 playGame :: (Player, Player) -> (Player, Player)
 playGame players@(Player _ deck1, Player _ deck2) | length deck1 == 0 || length deck2 == 0 = players
