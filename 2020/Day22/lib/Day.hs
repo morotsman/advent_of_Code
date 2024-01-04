@@ -84,22 +84,16 @@ playRoundRecursiveCombat (RecursivePlayer decks1) (RecursivePlayer decks2) = let
   card1 = head deck1
   card2 = head deck2
   in
-    --trace ("Player 1 deck: " ++ show deck1 ++ " Player 1 decks: " ++ show decks1) $
-    --trace ("Player 2 deck: " ++ show deck2 ++ " Player 2 decks: " ++ show decks2) $
     if (card1 <= (length $ tail deck1) && card2 <= (length $ tail deck2))
     then let
-      (newPlayer1, newPlayer2) = playGameRecursiveCombat (RecursivePlayer [tail deck1]) (RecursivePlayer [tail deck2])
+      (newPlayer1, newPlayer2) = playGameRecursiveCombat (RecursivePlayer [take card1 $ tail deck1]) (RecursivePlayer [take card2 $ tail deck2])
       hasPlayer1Won = length (head (decks newPlayer1)) > 0
-      in
-        --trace("playRoundRecursiveCombat1") $
-        if hasPlayer1Won
+      in if hasPlayer1Won
           then (RecursivePlayer((tail deck1 ++ [card1, card2]):decks1), RecursivePlayer((tail deck2):decks2))
           else (RecursivePlayer((tail deck1):decks1), RecursivePlayer((tail deck2 ++ [card2, card1]):decks2))
     else let
       (newDeck1, newDeck2) = playRound' deck1 deck2
-      in
-        --trace("playRoundRecursiveCombat2")
-        (RecursivePlayer (newDeck1 : decks1), RecursivePlayer (newDeck2 : decks2))
+      in (RecursivePlayer (newDeck1 : decks1), RecursivePlayer (newDeck2 : decks2))
 
 
 scoreRecursiveGame :: (RecursivePlayer, RecursivePlayer) -> Int

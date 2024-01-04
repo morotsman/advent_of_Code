@@ -9,6 +9,4 @@ main = do
   let linesOfFile = lines content
   print ("Part1: " ++ show (scoreGame $ playGame $ getPlayers linesOfFile))
   let (player1, player2) = getRecursivePlayers linesOfFile
-  print (show player1)
-  print (show player2)
   print ("Part2: " ++ show (scoreRecursiveGame $ playGameRecursiveCombat player1 player2))
