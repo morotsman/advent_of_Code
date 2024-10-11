@@ -6,7 +6,7 @@ import Day2 (playGame2)
 
 main :: IO ()
 main = do
-  --print ("Part1: " ++ show (playGame 100 792845136))
+  print ("Part1: " ++ show (playGame 100 792845136))
 
   --let input = [3, 8, 9, 1, 2, 5, 4, 6, 7]
   let input = []

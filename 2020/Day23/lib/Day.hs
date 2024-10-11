@@ -8,6 +8,15 @@ type Cups = [Int]
 type CurrentCup = Int
 type Round = Int
 
+maxInInput :: Int
+maxInInput = 9
+
+minInInput :: Int
+minInInput = 1
+
+inputLength :: Int
+inputLength = 9
+
 playGame :: Round -> Int -> Int
 playGame rounds input = let
   cups = map (\x -> read [x]) (show input)
@@ -47,10 +56,10 @@ removeIndexes :: [Int] -> Cups -> Cups
 removeIndexes indexes cups = fmap snd $ filter (\(i, _) -> not (elem i indexes)) (zip [0..] cups)
 
 indexesToPickUp :: Int -> CurrentCup -> Cups -> [Int]
-indexesToPickUp numberOfCups currentCup cups = take numberOfCups $ fmap (\i -> mod i (length cups)) [(currentCup+1)..]
+indexesToPickUp numberOfCups currentCup cups = take numberOfCups $ fmap (\i -> mod i inputLength) [(currentCup+1)..]
 
 selectDestinationCup :: CurrentCup -> Cups -> Cups -> CurrentCup
 selectDestinationCup currentCup pickedUpCups leftovers
-  | ((currentCup - 1) < minimum (pickedUpCups ++ leftovers)) = selectDestinationCup (maximum (pickedUpCups ++ leftovers) + 1) pickedUpCups leftovers
+  | (currentCup - 1) < minInInput = selectDestinationCup (maxInInput + 1) pickedUpCups leftovers
   | not $ elem (currentCup - 1)  pickedUpCups = currentCup - 1
   | otherwise = selectDestinationCup (currentCup - 1) pickedUpCups leftovers
