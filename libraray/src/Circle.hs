@@ -85,7 +85,6 @@ removeNodes startNode currentNode 0 = do
     Nothing -> return ()
   return []
 removeNodes startNode currentNode n = do
-  -- Recursively remove nodes
   nextNode <- readIORef (next currentNode)
   case nextNode of
     Just next -> do
