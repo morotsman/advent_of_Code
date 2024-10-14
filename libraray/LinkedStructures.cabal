@@ -13,7 +13,10 @@ library
     hs-source-dirs:   src
     exposed-modules:  DoubleLinkedList, Circle
     build-depends:
-        base ^>=4.17.2.0
+        base ^>=4.17.2.0,
+        containers,
+        unordered-containers,
+        hashable
     default-language: Haskell2010
 
 -- Test suite for DoubleLinkedList
@@ -39,5 +42,8 @@ test-suite Circle-test
         HUnit >= 1.6,
         test-framework >= 0.8,
         test-framework-hunit >= 0.3,
-        LinkedStructures
+        LinkedStructures,
+        containers,
+        unordered-containers,
+        hashable
     default-language: Haskell2010

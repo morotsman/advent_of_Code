@@ -5,11 +5,15 @@ module Circle
   , fromList
   , insertAfter
   , removeAfter
+  , findNode
   ) where
 
 import Data.IORef
 import Debug.Trace (trace)
 import System.Mem.StableName
+import qualified Data.HashMap.Strict as HashMap
+import Data.HashMap.Strict (HashMap)
+import Data.Hashable (Hashable)
 
 data Node a = Node
   { value :: a
@@ -17,12 +21,17 @@ data Node a = Node
   , next  :: IORef (Maybe (Node a))
   }
 
-newNode :: a -> IO (Node a)
+type NodeMap a = HashMap a (Node a)  -- HashMap for O(1) lookup of nodes by value
+
+-- Create a new node and add it to the index
+newNode :: (Eq a, Hashable a) => a -> IO (Node a, NodeMap a)
 newNode val = do
   prevRef <- newIORef Nothing
   nextRef <- newIORef Nothing
-  return (Node val prevRef nextRef)
+  let node = Node val prevRef nextRef
+  return (node, HashMap.singleton val node)
 
+-- Function to link two nodes
 linkNodes :: Node a -> Node a -> IO ()
 linkNodes node1 node2 = do
   writeIORef (next node1) (Just node2)
@@ -37,25 +46,25 @@ moveBackward :: Node a -> IO (Maybe (Node a))
 moveBackward node = readIORef (prev node)
 
 -- Function to create a circular linked list from a Haskell list
-fromList :: [a] -> IO (Maybe (Node a))
-fromList [] = return Nothing
+fromList :: (Eq a, Hashable a) => [a] -> IO (Maybe (Node a), NodeMap a)
+fromList [] = return (Nothing, HashMap.empty)
 fromList (x:xs) = do
-  headNode <- newNode x
-  buildCircle headNode headNode xs
+  (headNode, index) <- newNode x
+  buildCircle headNode headNode xs index
   where
-    buildCircle :: Node a -> Node a -> [a] -> IO (Maybe (Node a))
-    buildCircle headNode lastNode [] = do
+    buildCircle :: (Eq a, Hashable a) => Node a -> Node a -> [a] -> NodeMap a -> IO (Maybe (Node a), NodeMap a)
+    buildCircle headNode lastNode [] index = do
       -- Link the last node to the head node to form a circle
       linkNodes lastNode headNode
-      return (Just headNode)
-    buildCircle headNode lastNode (y:ys) = do
-      newNode <- newNode y
+      return (Just headNode, index)
+    buildCircle headNode lastNode (y:ys) index = do
+      (newNode, newIndex) <- newNode y
       linkNodes lastNode newNode
-      buildCircle headNode newNode ys
+      buildCircle headNode newNode ys (HashMap.union index newIndex)
 
--- Insert a node after a given node
-insertAfter :: Node a -> Node a -> IO ()
-insertAfter node newNode = do
+-- Function to insert a node after a given node
+insertAfter :: (Eq a, Hashable a) => Node a -> Node a -> NodeMap a -> IO (NodeMap a)
+insertAfter node newNode index = do
   nextNode <- readIORef (next node)
   writeIORef (next newNode) nextNode
   writeIORef (prev newNode) (Just node)
@@ -63,6 +72,20 @@ insertAfter node newNode = do
   case nextNode of
     Just nextNode' -> writeIORef (prev nextNode') (Just newNode)
     Nothing -> return ()
+  return (HashMap.insert (value newNode) newNode index)
+
+-- Function to find a node by value in O(1)
+findNode :: (Eq a, Hashable a) => a -> NodeMap a -> Maybe (Node a)
+findNode val index = HashMap.lookup val index
+
+-- Function to remove a specified number of nodes after a given node and update the map
+removeAfter :: (Show a, Eq a, Hashable a) => Node a -> Int -> NodeMap a -> IO ([a], NodeMap a)
+removeAfter _ 0 index = return ([], index)
+removeAfter node n index = do
+  nextNode <- readIORef (next node)
+  case nextNode of
+    Just firstNode -> removeNodes node firstNode n index
+    Nothing -> return ([], index)
 
 -- Helper function to check if two nodes are the same by comparing their stable names
 nodesAreSame :: Node a -> Node a -> IO Bool
@@ -71,46 +94,28 @@ nodesAreSame node1 node2 = do
   sn2 <- makeStableName node2
   return (sn1 == sn2)
 
--- Remove a specified number of nodes after a given node and return them as a list
-removeAfter :: (Show a) => Node a -> Int -> IO [a]
-removeAfter _ 0 = return []
-removeAfter node n = do
-  nextNode <- readIORef (next node)
-  case nextNode of
-    Just firstNode -> do
-      removeNodes node firstNode n
-    Nothing -> return []
-
--- Helper function to remove nodes
-removeNodes :: (Show a) => Node a -> Node a -> Int -> IO [a]
-removeNodes startNode currentNode 0 = do
+-- Helper function to remove nodes and update the map
+removeNodes :: (Show a, Eq a, Hashable a) => Node a -> Node a -> Int -> NodeMap a -> IO ([a], NodeMap a)
+removeNodes startNode currentNode 0 index = do
   -- Re-link the nodes to maintain circular structure
   writeIORef (next startNode) (Just currentNode)
   writeIORef (prev currentNode) (Just startNode)
-  return []
-removeNodes startNode currentNode n = do
+  return ([], index)
+removeNodes startNode currentNode n index = do
   sameNode <- nodesAreSame startNode currentNode
+  let updatedIndex = HashMap.delete (value currentNode) index
   if sameNode
     then do
       writeIORef (next currentNode) Nothing
       writeIORef (prev currentNode) Nothing
-      return [value currentNode]
+      return ([value currentNode], updatedIndex)
     else do
       nextNode <- readIORef (next currentNode)
       case nextNode of
         Just next' -> do
           writeIORef (next currentNode) Nothing
           writeIORef (prev currentNode) Nothing
-
-          rest <- removeNodes startNode next' (n - 1)
-          return ((value currentNode) : rest)
-        Nothing -> return [value currentNode]
-
-
-
-
-
-
-
-
-
+          (rest, finalIndex) <- removeNodes startNode next' (n - 1) updatedIndex
+          return (value currentNode : rest, finalIndex)
+        Nothing ->
+          return ([value currentNode], updatedIndex)
