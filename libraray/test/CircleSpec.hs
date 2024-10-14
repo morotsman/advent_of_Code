@@ -209,6 +209,83 @@ testInsertListAfterLargerList = TestCase $ do
         Nothing -> assertFailure "Failed to move to node3"
     Nothing -> assertFailure "Failed to create initial circle"
 
+-- Test case: Find an existing node in the HashMap
+testFindNodeExisting :: Test
+testFindNodeExisting = TestCase $ do
+  -- Create a circular linked list from the list [1, 2, 3, 4, 5]
+  (maybeHeadNode, index) <- fromList ([1, 2, 3, 4, 5] :: [Int])
+  case maybeHeadNode of
+    Just _ -> do
+      -- Try to find node 3 in the map
+      let maybeNode3 = findNode 3 index
+      case maybeNode3 of
+        Just node3 -> assertEqual "Found node with value 3" (value node3) (3 :: Int)
+        Nothing -> assertFailure "Expected to find node with value 3"
+
+      -- Try to find node 5 in the map
+      let maybeNode5 = findNode 5 index
+      case maybeNode5 of
+        Just node5 -> assertEqual "Found node with value 5" (value node5) (5 :: Int)
+        Nothing -> assertFailure "Expected to find node with value 5"
+
+    Nothing -> assertFailure "Could not create circular list"
+
+-- Test case: Try to find a node that does not exist in the HashMap
+testFindNodeNonExisting :: Test
+testFindNodeNonExisting = TestCase $ do
+  -- Create a circular linked list from the list [1, 2, 3, 4, 5]
+  (_, index) <- fromList ([1, 2, 3, 4, 5] :: [Int])
+
+  -- Try to find a node with a value that doesn't exist
+  let maybeNode10 = findNode 10 index
+  case maybeNode10 of
+    Just _ -> assertFailure "Expected not to find node with value 10"
+    Nothing -> return ()  -- Success, the node does not exist
+
+-- Test case: Find a node after removing other nodes
+testFindNodeAfterRemoval :: Test
+testFindNodeAfterRemoval = TestCase $ do
+  -- Create a circular linked list from the list [1, 2, 3, 4, 5]
+  (maybeHeadNode, index) <- fromList ([1, 2, 3, 4, 5] :: [Int])
+  case maybeHeadNode of
+    Just headNode -> do
+      -- Remove nodes 2 and 3
+      (_, updatedIndex) <- removeAfter headNode 2 index
+
+      -- Try to find node 1 (should still exist)
+      let maybeNode1 = findNode 1 updatedIndex
+      case maybeNode1 of
+        Just node1 -> assertEqual "Found node with value 1" (value node1) (1 :: Int)
+        Nothing -> assertFailure "Expected to find node with value 1"
+
+      -- Try to find node 2 (should not exist after removal)
+      let maybeNode2 = findNode 2 updatedIndex
+      case maybeNode2 of
+        Just _ -> assertFailure "Expected not to find node with value 2"
+        Nothing -> return ()  -- Success, the node has been removed
+
+      -- Try to find node 4 (should still exist)
+      let maybeNode4 = findNode 4 updatedIndex
+      case maybeNode4 of
+        Just node4 -> assertEqual "Found node with value 4" (value node4) (4 :: Int)
+        Nothing -> assertFailure "Expected to find node with value 4"
+
+    Nothing -> assertFailure "Could not create circular list"
+
+-- Test case: Ensure the map is empty after all nodes are removed
+testFindNodeAfterAllRemoved :: Test
+testFindNodeAfterAllRemoved = TestCase $ do
+  -- Create a circular linked list from the list [1, 2, 3, 4, 5]
+  (maybeHeadNode, index) <- fromList ([1, 2, 3, 4, 5] :: [Int])
+  case maybeHeadNode of
+    Just headNode -> do
+      -- Remove all nodes
+      (_, updatedIndex) <- removeAfter headNode 5 index
+
+      -- Try to find any node (none should exist)
+      assertBool "HashMap should be empty after removing all nodes" (HashMap.null updatedIndex)
+
+    Nothing -> assertFailure "Could not create circular list"
 
 -- Test suite
 tests = hUnitTestToTests $ TestList
@@ -220,6 +297,10 @@ tests = hUnitTestToTests $ TestList
   , TestLabel "testRemoveAll" testRemoveAll
   , TestLabel "testInsertListAfter" testInsertListAfter
   , TestLabel "testInsertListAfterLargerList" testInsertListAfterLargerList
+  , TestLabel "testFindNodeExisting" testFindNodeExisting
+  , TestLabel "testFindNodeNonExisting" testFindNodeNonExisting
+  , TestLabel "testFindNodeAfterRemoval" testFindNodeAfterRemoval
+  , TestLabel "testFindNodeAfterAllRemoved" testFindNodeAfterAllRemoved
   ]
 
 -- Main function to run the tests
