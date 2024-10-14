@@ -1,0 +1,43 @@
+cabal-version:      2.4
+name:               LinkedStructures
+version:            0.1.0.0
+
+synopsis:           Linked structures implementation (DoubleLinkedList and Circle)
+
+author:             Niklas Leopold
+maintainer:         leopold.niklas@gmail.com
+
+extra-source-files: CHANGELOG.md
+
+library
+    hs-source-dirs:   src
+    exposed-modules:  DoubleLinkedList, Circle
+    build-depends:
+        base ^>=4.17.2.0
+    default-language: Haskell2010
+
+-- Test suite for DoubleLinkedList
+test-suite DoubleLinkedList-test
+    type:             exitcode-stdio-1.0
+    main-is:          DoubleLinkedListSpec.hs
+    hs-source-dirs:   test
+    build-depends:
+        base ^>=4.17.2.0,
+        HUnit >= 1.6,
+        test-framework >= 0.8,
+        test-framework-hunit >= 0.3,
+        LinkedStructures
+    default-language: Haskell2010
+
+-- Test suite for Circle
+test-suite Circle-test
+    type:             exitcode-stdio-1.0
+    main-is:          CircleSpec.hs
+    hs-source-dirs:   test
+    build-depends:
+        base ^>=4.17.2.0,
+        HUnit >= 1.6,
+        test-framework >= 0.8,
+        test-framework-hunit >= 0.3,
+        LinkedStructures
+    default-language: Haskell2010

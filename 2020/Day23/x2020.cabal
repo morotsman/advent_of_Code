@@ -35,7 +35,10 @@ executable x2020
         parallel,
         vector,
         regex-tdfa,
-        day-lib
+        day-lib,
+        containers >= 0.5,
+        array,
+        mtl
     hs-source-dirs:   app
     default-language: Haskell2010
 
