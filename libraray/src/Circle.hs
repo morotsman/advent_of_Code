@@ -1,6 +1,5 @@
 module Circle
   ( Node(..)
-  , Circle
   , moveForward
   , moveBackward
   , fromList
@@ -9,14 +8,14 @@ module Circle
   ) where
 
 import Data.IORef
+import Debug.Trace (trace)
+import System.Mem.StableName
 
 data Node a = Node
   { value :: a
   , prev  :: IORef (Maybe (Node a))
   , next  :: IORef (Maybe (Node a))
   }
-
-type Circle a = (Node a, Node a)
 
 newNode :: a -> IO (Node a)
 newNode val = do
@@ -38,17 +37,17 @@ moveBackward :: Node a -> IO (Maybe (Node a))
 moveBackward node = readIORef (prev node)
 
 -- Function to create a circular linked list from a Haskell list
-fromList :: [a] -> IO (Maybe (Circle a))
+fromList :: [a] -> IO (Maybe (Node a))
 fromList [] = return Nothing
 fromList (x:xs) = do
   headNode <- newNode x
   buildCircle headNode headNode xs
   where
-    buildCircle :: Node a -> Node a -> [a] -> IO (Maybe (Circle a))
+    buildCircle :: Node a -> Node a -> [a] -> IO (Maybe (Node a))
     buildCircle headNode lastNode [] = do
       -- Link the last node to the head node to form a circle
       linkNodes lastNode headNode
-      return (Just (headNode, lastNode))
+      return (Just headNode)
     buildCircle headNode lastNode (y:ys) = do
       newNode <- newNode y
       linkNodes lastNode newNode
@@ -65,30 +64,53 @@ insertAfter node newNode = do
     Just nextNode' -> writeIORef (prev nextNode') (Just newNode)
     Nothing -> return ()
 
+-- Helper function to check if two nodes are the same by comparing their stable names
+nodesAreSame :: Node a -> Node a -> IO Bool
+nodesAreSame node1 node2 = do
+  sn1 <- makeStableName node1
+  sn2 <- makeStableName node2
+  return (sn1 == sn2)
+
 -- Remove a specified number of nodes after a given node and return them as a list
-removeAfter :: Node a -> Int -> IO [a]
+removeAfter :: (Show a) => Node a -> Int -> IO [a]
 removeAfter _ 0 = return []
 removeAfter node n = do
   nextNode <- readIORef (next node)
   case nextNode of
-    Just firstNode -> removeNodes node firstNode n
+    Just firstNode -> do
+      removeNodes node firstNode n
     Nothing -> return []
 
 -- Helper function to remove nodes
-removeNodes :: Node a -> Node a -> Int -> IO [a]
+removeNodes :: (Show a) => Node a -> Node a -> Int -> IO [a]
 removeNodes startNode currentNode 0 = do
-  -- Fix the circular links after removal
-  nextNode <- readIORef (next currentNode)
-  writeIORef (next startNode) nextNode
-  case nextNode of
-    Just next -> writeIORef (prev next) (Just startNode)
-    Nothing -> return ()
+  -- Re-link the nodes to maintain circular structure
+  writeIORef (next startNode) (Just currentNode)
+  writeIORef (prev currentNode) (Just startNode)
   return []
 removeNodes startNode currentNode n = do
-  nextNode <- readIORef (next currentNode)
-  case nextNode of
-    Just next -> do
-      rest <- removeNodes startNode next (n - 1)
-      return ((value currentNode) : rest)
-    Nothing -> return [value currentNode]
+  sameNode <- nodesAreSame startNode currentNode
+  if sameNode
+    then do
+      writeIORef (next currentNode) Nothing
+      writeIORef (prev currentNode) Nothing
+      return [value currentNode]
+    else do
+      nextNode <- readIORef (next currentNode)
+      case nextNode of
+        Just next' -> do
+          writeIORef (next currentNode) Nothing
+          writeIORef (prev currentNode) Nothing
+
+          rest <- removeNodes startNode next' (n - 1)
+          return ((value currentNode) : rest)
+        Nothing -> return [value currentNode]
+
+
+
+
+
+
+
+
 
