@@ -126,6 +126,90 @@ testRemoveAll = TestCase $ do
       assertBool "HashMap is empty after removing all nodes" (HashMap.null updatedIndex)
     Nothing -> assertFailure "Could not create circular list"
 
+-- Test case: Insert a list of nodes into the circle and check both list and HashMap
+testInsertListAfter :: Test
+testInsertListAfter = TestCase $ do
+  (maybeHeadNode, index) <- fromList ([1, 3] :: [Int])
+  case maybeHeadNode of
+    Just node1 -> do
+      -- Insert [2, 4] after node 1
+      updatedIndex <- insertListAfter node1 [2, 4] index
+
+      -- Verify the linked structure:
+      -- node1 -> node2 -> node4 -> node3 (circular)
+      maybeNext1 <- moveForward node1
+      case maybeNext1 of
+        Just node2 -> do
+          assertEqual "Node after node1 should be 2" (value node2) (2 :: Int)
+
+          maybeNext2 <- moveForward node2
+          case maybeNext2 of
+            Just node4 -> do
+              assertEqual "Node after node2 should be 4" (value node4) (4 :: Int)
+
+              maybeNext3 <- moveForward node4
+              case maybeNext3 of
+                Just node3 -> do
+                  assertEqual "Node after node4 should be 3" (value node3) (3 :: Int)
+
+                  -- Check that the circular structure is maintained
+                  maybeNext4 <- moveForward node3
+                  case maybeNext4 of
+                    Just node1' -> assertEqual "Node after node3 should be node1" (value node1') (1 :: Int)
+                    Nothing -> assertFailure "Expected node1 after node3 (circular structure)"
+                Nothing -> assertFailure "Expected node3 after node4"
+            Nothing -> assertFailure "Expected node4 after node2"
+        Nothing -> assertFailure "Expected node2 after node1"
+
+      -- Verify the updated HashMap contains all inserted nodes
+      assertBool "HashMap contains node 1" (HashMap.member 1 updatedIndex)
+      assertBool "HashMap contains node 2" (HashMap.member 2 updatedIndex)
+      assertBool "HashMap contains node 4" (HashMap.member 4 updatedIndex)
+      assertBool "HashMap contains node 3" (HashMap.member 3 updatedIndex)
+
+    Nothing -> assertFailure "Failed to create initial circle"
+
+-- Test case: Insert multiple nodes into a non-trivial list and check list and HashMap
+testInsertListAfterLargerList :: Test
+testInsertListAfterLargerList = TestCase $ do
+  (maybeHeadNode, index) <- fromList ([1, 3, 5, 6] :: [Int])
+  case maybeHeadNode of
+    Just node1 -> do
+      -- Move to node3 (the node after node1)
+      maybeNode2 <- moveForward node1
+      case maybeNode2 of
+        Just node3 -> do
+          -- Insert [4] after node 3
+          updatedIndex <- insertListAfter node3 [4] index
+
+          -- Verify the structure: 1 -> 3 -> 4 -> 5 -> 6 -> 1 (circular)
+          maybeNext3 <- moveForward node3
+          case maybeNext3 of
+            Just node4 -> do
+              assertEqual "Node after node3 should be 4" (value node4) (4 :: Int)
+
+              maybeNext4 <- moveForward node4
+              case maybeNext4 of
+                Just node5 -> do
+                  assertEqual "Node after node4 should be 5" (value node5) (5 :: Int)
+
+                  -- Check the circular structure: node5 -> node6 -> node1
+                  maybeNext5 <- moveForward node5
+                  case maybeNext5 of
+                    Just node6 -> do
+                      assertEqual "Node after node5 should be 6" (value node6) (6 :: Int)
+                      -- Now assign node6 and check the circular structure
+                      maybeNext6 <- moveForward node6
+                      case maybeNext6 of
+                        Just node1' -> assertEqual "Node after node6 should be node1" (value node1') (1 :: Int)
+                        Nothing -> assertFailure "Expected node1 after node6 (circular structure)"
+                    Nothing -> assertFailure "Expected node6 after node5"
+                Nothing -> assertFailure "Expected node5 after node4"
+            Nothing -> assertFailure "Expected node4 after node3"
+        Nothing -> assertFailure "Failed to move to node3"
+    Nothing -> assertFailure "Failed to create initial circle"
+
+
 -- Test suite
 tests = hUnitTestToTests $ TestList
   [
@@ -134,6 +218,8 @@ tests = hUnitTestToTests $ TestList
   , TestLabel "testRemoveOneNode" testRemoveOneNode
   , TestLabel "testRemoveAfter" testRemoveAfter
   , TestLabel "testRemoveAll" testRemoveAll
+  , TestLabel "testInsertListAfter" testInsertListAfter
+  , TestLabel "testInsertListAfterLargerList" testInsertListAfterLargerList
   ]
 
 -- Main function to run the tests

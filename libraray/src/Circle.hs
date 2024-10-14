@@ -6,6 +6,7 @@ module Circle
   , insertAfter
   , removeAfter
   , findNode
+  , insertListAfter
   ) where
 
 import Data.IORef
@@ -14,6 +15,7 @@ import System.Mem.StableName
 import qualified Data.HashMap.Strict as HashMap
 import Data.HashMap.Strict (HashMap)
 import Data.Hashable (Hashable)
+import Control.Monad (foldM)
 
 data Node a = Node
   { value :: a
@@ -73,6 +75,18 @@ insertAfter node newNode index = do
     Just nextNode' -> writeIORef (prev nextNode') (Just newNode)
     Nothing -> return ()
   return (HashMap.insert (value newNode) newNode index)
+
+-- Function to insert a list of nodes after a given node
+insertListAfter :: (Eq a, Hashable a) => Node a -> [a] -> NodeMap a -> IO (NodeMap a)
+insertListAfter _ [] index = return index  -- If the list is empty, do nothing
+insertListAfter node values index = do
+  (newNodes, updatedIndex) <- foldM (\(prevNode, idx) val -> do
+                                       (newNode, newIndex) <- newNode val
+                                       updatedIdx <- insertAfter prevNode newNode idx
+                                       return (newNode, HashMap.union idx newIndex)
+                                     ) (node, index) values
+  return updatedIndex
+
 
 -- Function to find a node by value in O(1)
 findNode :: (Eq a, Hashable a) => a -> NodeMap a -> Maybe (Node a)
