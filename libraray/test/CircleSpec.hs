@@ -1,3 +1,4 @@
+{-# LANGUAGE ScopedTypeVariables #-}
 module Main where
 
 import Test.Framework (defaultMain)
@@ -199,6 +200,50 @@ testInsertListAfterAtEnd = TestCase $ do
       assertBool "HashMap contains node 3" (HashMap.member 3 updatedIndex)
 
     Nothing -> assertFailure "Failed to create initial circle"
+    
+testScenario :: Test
+testScenario = TestCase $ do
+  (maybeHeadNode, index) <- fromList ([8,9,1,3,4,6,7,2,5] :: [Int])
+  case maybeHeadNode of
+    Just node1 -> do
+      originalList <- toList node1
+
+      assertEqual "list should be the same" [8,9,1,3,4,6,7,2,5] originalList
+
+      (removedNodes, updatedIndexAfterRemove) <- removeAfter node1 3 index
+
+      assertEqual "removed nodes should be" [9,1,3] removedNodes
+      assertBool "HashMap contains node 8" (HashMap.member 8 updatedIndexAfterRemove)
+      assertBool "HashMap contains node 4" (HashMap.member 4 updatedIndexAfterRemove)
+      assertBool "HashMap contains node 6" (HashMap.member 6 updatedIndexAfterRemove)
+      assertBool "HashMap contains node 7" (HashMap.member 7 updatedIndexAfterRemove)
+      assertBool "HashMap contains node 2" (HashMap.member 2 updatedIndexAfterRemove)
+      assertBool "HashMap contains node 5" (HashMap.member 5 updatedIndexAfterRemove)
+      assertBool "HashMap does not contain removed node 9" (not $ HashMap.member 9 updatedIndexAfterRemove)
+      assertBool "HashMap does not contain removed node 1" (not $ HashMap.member 1 updatedIndexAfterRemove)
+      assertBool "HashMap does not contain removed node 3" (not $ HashMap.member 3 updatedIndexAfterRemove)
+
+      listAfterRemove <- toList node1
+      assertEqual "elements should have been removed" [8,4,6,7,2,5] listAfterRemove
+
+      let maybeDestination = findNode 7 updatedIndexAfterRemove
+
+      case maybeDestination of
+        Just destination -> do
+          updatedIndexAfterInsert <- insertListAfter destination removedNodes index
+          listAfterInsert <- toList node1
+          assertEqual "elements should have been removed" [8,4,6,7,9,1,3,2,5] listAfterInsert
+        Nothing -> assertFailure "The circle should contain 7"
+
+      assertEqual "elements should have been removed" [8,4,6,7,2,5] listAfterRemove
+
+
+
+
+
+
+
+    Nothing -> assertFailure "Failed to create initial circle"
 
 -- Test case: Insert multiple nodes into a non-trivial list and check list and HashMap
 testInsertListAfterLargerList :: Test
@@ -333,6 +378,7 @@ tests = hUnitTestToTests $ TestList
   , TestLabel "testFindNodeNonExisting" testFindNodeNonExisting
   , TestLabel "testFindNodeAfterRemoval" testFindNodeAfterRemoval
   , TestLabel "testFindNodeAfterAllRemoved" testFindNodeAfterAllRemoved
+  , TestLabel "testScenario" testScenario
   ]
 
 -- Main function to run the tests
