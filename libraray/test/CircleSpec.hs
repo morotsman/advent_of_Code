@@ -169,6 +169,37 @@ testInsertListAfter = TestCase $ do
 
     Nothing -> assertFailure "Failed to create initial circle"
 
+-- Test case: Insert a list of nodes into the circle and check both list and HashMap
+testInsertListAfterAtEnd :: Test
+testInsertListAfterAtEnd = TestCase $ do
+  (maybeHeadNode, index) <- fromList ([1] :: [Int])
+  case maybeHeadNode of
+    Just node1 -> do
+      updatedIndex <- insertListAfter node1 [2, 3] index
+      -- node1 -> node2 -> node3 -> node1 (circular)
+      maybeNext1 <- moveForward node1
+      case maybeNext1 of
+        Just node2 -> do
+          assertEqual "Node after node1 should be 2" (value node2) (2 :: Int)
+          maybeNext2 <- moveForward node2
+          case maybeNext2 of
+            Just node3 -> do
+              assertEqual "Node after node2 should be 3" (value node3) (3 :: Int)
+              maybeNext1 <- moveForward node3
+              case maybeNext1 of
+                Just node1 -> do
+                  assertEqual "Node after node3 should be 1" (value node1) (1 :: Int)
+                Nothing -> assertFailure "Expected node1 after node3"
+            Nothing -> assertFailure "Expected node3 after node1"
+        Nothing -> assertFailure "Expected node2 after node1"
+
+      -- Verify the updated HashMap contains all inserted nodes
+      assertBool "HashMap contains node 1" (HashMap.member 1 updatedIndex)
+      assertBool "HashMap contains node 2" (HashMap.member 2 updatedIndex)
+      assertBool "HashMap contains node 3" (HashMap.member 3 updatedIndex)
+
+    Nothing -> assertFailure "Failed to create initial circle"
+
 -- Test case: Insert multiple nodes into a non-trivial list and check list and HashMap
 testInsertListAfterLargerList :: Test
 testInsertListAfterLargerList = TestCase $ do
@@ -297,6 +328,7 @@ tests = hUnitTestToTests $ TestList
   , TestLabel "testRemoveAll" testRemoveAll
   , TestLabel "testInsertListAfter" testInsertListAfter
   , TestLabel "testInsertListAfterLargerList" testInsertListAfterLargerList
+  , TestLabel "testInsertListAfterAtEnd" testInsertListAfterAtEnd
   , TestLabel "testFindNodeExisting" testFindNodeExisting
   , TestLabel "testFindNodeNonExisting" testFindNodeNonExisting
   , TestLabel "testFindNodeAfterRemoval" testFindNodeAfterRemoval

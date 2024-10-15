@@ -3,51 +3,66 @@ module Day2 (playGame2) where
 
 import qualified Data.Set as Set
 import Debug.Trace (trace)
+import Circle
+import Data.IORef
 
 type Cups = [Int]
 type CurrentCup = Int
 type Round = Int
 
-playGame2 :: Round -> [Int] -> [Int]
-playGame2 rounds cups = snd $ playGame' rounds (0, cups)
+maxInInput :: Int
+maxInInput = 9
 
-playGame' :: Round -> (CurrentCup, Cups) -> (CurrentCup, Cups)
-playGame' rounds (currentCup, cups) | rounds == 0 = (currentCup, cups)
-                                    | otherwise = trace("round: " ++ show rounds) $ playGame' (rounds - 1) (playRound (currentCup, cups))
+minInInput :: Int
+minInInput = 1
 
-playRound :: (CurrentCup, Cups) -> (CurrentCup, Cups)
-playRound (currentCup, cups) = let
-  (pickedUpCups, leftovers) = pickUp 3 currentCup cups
-  destinationCup = selectDestinationCup (cups !! currentCup) pickedUpCups leftovers
-  newCups = insertCups currentCup destinationCup pickedUpCups leftovers
-  in trace("currentCup: " ++ show currentCup) (if (currentCup >= (length cups - 1 )) then 0 else currentCup + 1, newCups)
+inputLength :: Int
+inputLength = 9
 
-insertCups :: CurrentCup -> CurrentCup -> Cups -> Cups -> Cups
-insertCups currentCup destinationCup pickedUpCups leftovers = let
-  beforeDestinationCup = takeWhile (\c -> not (c == destinationCup)) leftovers
-  afterDestinationCup = drop 1 $ dropWhile (\c -> not (c == destinationCup)) leftovers
-  newCups = beforeDestinationCup ++ [destinationCup] ++ pickedUpCups ++ afterDestinationCup
-  afterCurrentCup = take (length newCups - currentCup) newCups
-  beforeCurrentCup = drop (length newCups - currentCup) newCups
-  in beforeCurrentCup ++ afterCurrentCup
+playGame2 :: Round -> [Int] -> IO (Maybe [Int])
+playGame2 rounds cups = do
+  (maybeHeadNode, index) <- fromList cups
+  traverse (\headNode -> playGame' rounds headNode index) maybeHeadNode
 
-pickUp :: Int -> CurrentCup -> Cups -> (Cups, Cups)
-pickUp numberOfCups currentCup cups = let
-  indexesToPick = indexesToPickUp numberOfCups currentCup cups
-  pickedUp = fmap (cups !!) indexesToPick
-  pre = filter (\cup -> not (elem cup pickedUp)) $ take currentCup cups
-  post = drop (length pre + 1) $ removeIndexes indexesToPick cups
-  leftovers =  [cups !! currentCup] ++ post ++ pre
-  in (pickedUp, leftovers)
 
-removeIndexes :: [Int] -> Cups -> Cups
-removeIndexes indexes cups = fmap snd $ filter (\(i, _) -> not (elem i indexes)) (zip [0..] cups)
+playGame' :: Round -> Node Int -> NodeMap Int -> IO [Int]
+playGame' 0 currentNode index = do
+  toList currentNode
+playGame' n currentNode index = do
+  -- debug
+  circleList <- toList currentNode
+  putStrLn $ "Current node: " ++ show (value currentNode)
+  putStrLn $ "cups: " ++ show circleList
+  --
+  (removedNodes, updatedIndexAfterRemove) <- removeAfter currentNode 3 index
+  -- debug
+  putStrLn $ "pick up: " ++ show removedNodes
+  --
+  let currentValue = value currentNode
+  let destinationCup = selectDestinationCup currentValue updatedIndexAfterRemove
+  -- debug
+  putStrLn $ "destinationCup: " ++ show (value destinationCup)
+  --
+  updatedIndexAfterInsert <- insertListAfter destinationCup removedNodes index
+  -- debug
+  circleList <- toList currentNode
+  putStrLn $ "cups2: " ++ show circleList
+  --
+  maybeNextNode <- readIORef (next currentNode)
+  case maybeNextNode of
+    Just nextNode ->
+      playGame' (n-1) nextNode updatedIndexAfterInsert
+    Nothing -> error "This should not be possible in a circle"
 
-indexesToPickUp :: Int -> CurrentCup -> Cups -> [Int]
-indexesToPickUp numberOfCups currentCup cups = take numberOfCups $ fmap (\i -> mod i (length cups)) [(currentCup+1)..]
 
-selectDestinationCup :: CurrentCup -> Cups -> Cups -> CurrentCup
-selectDestinationCup currentCup pickedUpCups leftovers
-  | ((currentCup - 1) < minimum (pickedUpCups ++ leftovers)) = selectDestinationCup (maximum (pickedUpCups ++ leftovers) + 1) pickedUpCups leftovers
-  | not $ elem (currentCup - 1)  pickedUpCups = currentCup - 1
-  | otherwise = selectDestinationCup (currentCup - 1) pickedUpCups leftovers
+selectDestinationCup :: Int -> NodeMap Int -> Node Int
+selectDestinationCup currentValue index | currentValue < minInInput = do
+  selectDestinationCup maxInInput index
+selectDestinationCup currentValue index = do
+  let maybeNode :: Maybe (Node Int) = findNode (currentValue - 1) index
+  case maybeNode of
+    Just node -> node
+    Nothing -> selectDestinationCup (currentValue - 1) index
+
+
+
