@@ -11,20 +11,20 @@ type CurrentCup = Int
 type Round = Int
 
 maxInInput :: Int
-maxInInput = 9
+maxInInput = 1000000
 
 minInInput :: Int
 minInInput = 1
 
-playGame2 :: Round -> [Int] -> IO (Maybe [Int])
+playGame2 :: Round -> [Int] -> IO (Maybe (NodeMap Int))
 playGame2 rounds cups = do
   (maybeHeadNode, index) <- fromList cups
   traverse (\headNode -> playGame' rounds headNode index) maybeHeadNode
 
 
-playGame' :: Round -> Node Int -> NodeMap Int -> IO [Int]
+playGame' :: Round -> Node Int -> NodeMap Int -> IO (NodeMap Int)
 playGame' 0 currentNode index = do
-  toList currentNode
+  return index
 playGame' n currentNode index = do
   (removedNodes, updatedIndexAfterRemove) <- removeAfter currentNode 3 index
   let currentValue = value currentNode
