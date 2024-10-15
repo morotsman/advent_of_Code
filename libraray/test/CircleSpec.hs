@@ -200,7 +200,7 @@ testInsertListAfterAtEnd = TestCase $ do
       assertBool "HashMap contains node 3" (HashMap.member 3 updatedIndex)
 
     Nothing -> assertFailure "Failed to create initial circle"
-    
+
 testScenario :: Test
 testScenario = TestCase $ do
   (maybeHeadNode, index) <- fromList ([8,9,1,3,4,6,7,2,5] :: [Int])
@@ -236,13 +236,6 @@ testScenario = TestCase $ do
         Nothing -> assertFailure "The circle should contain 7"
 
       assertEqual "elements should have been removed" [8,4,6,7,2,5] listAfterRemove
-
-
-
-
-
-
-
     Nothing -> assertFailure "Failed to create initial circle"
 
 -- Test case: Insert multiple nodes into a non-trivial list and check list and HashMap
