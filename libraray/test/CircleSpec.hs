@@ -232,7 +232,16 @@ testScenario = TestCase $ do
         Just destination -> do
           updatedIndexAfterInsert <- insertListAfter destination removedNodes index
           listAfterInsert <- toList node1
-          assertEqual "elements should have been removed" [8,4,6,7,9,1,3,2,5] listAfterInsert
+          assertEqual "elements should have been inserted" [8,4,6,7,9,1,3,2,5] listAfterInsert
+          assertBool "HashMap contains node 8" (HashMap.member 8 updatedIndexAfterInsert)
+          assertBool "HashMap contains node 4" (HashMap.member 4 updatedIndexAfterInsert)
+          assertBool "HashMap contains node 6" (HashMap.member 6 updatedIndexAfterInsert)
+          assertBool "HashMap contains node 7" (HashMap.member 7 updatedIndexAfterInsert)
+          assertBool "HashMap contains node 2" (HashMap.member 2 updatedIndexAfterInsert)
+          assertBool "HashMap contains node 5" (HashMap.member 5 updatedIndexAfterInsert)
+          assertBool "HashMap contains node 9" (HashMap.member 9 updatedIndexAfterInsert)
+          assertBool "HashMap contains node 1" (HashMap.member 1 updatedIndexAfterInsert)
+          assertBool "HashMap contains node 3" (HashMap.member 3 updatedIndexAfterInsert)
         Nothing -> assertFailure "The circle should contain 7"
 
       assertEqual "elements should have been removed" [8,4,6,7,2,5] listAfterRemove
