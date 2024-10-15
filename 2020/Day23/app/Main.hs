@@ -8,6 +8,6 @@ main :: IO ()
 main = do
     putStrLn "hello"
 
-    result <- playGame2 10 ([3, 8,  9,  1,  2,  5,  4,  6,  7])
+    result <- playGame2 100 ([7, 9, 2, 8, 4, 5, 1, 3, 6])
     putStrLn $ show result
 
