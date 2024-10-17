@@ -1,4 +1,6 @@
-module Challenge1( Coordinate, Path, getPath, traversePath ) where
+module Challenge1( Coordinate, Path, getPath, traversePath, visitedTiles, blackTiles) where
+
+import qualified Data.Map as Map
 
 -- column, row
 type Column = Int
@@ -8,6 +10,18 @@ type Coordinate = (Column, Row)
 
 type Path = [String]
 
+blackTiles :: Map.Map Coordinate Int -> Map.Map Coordinate Int
+blackTiles visitedTiles = Map.filter odd visitedTiles
+
+
+visitedTiles :: [String] -> Map.Map Coordinate Int
+visitedTiles lines = do
+  let allDiscoveredTiles = map (\line -> head $ traversePath (0, 0) (getPath line)) lines
+  countOccurrences allDiscoveredTiles
+
+
+countOccurrences :: (Ord k) => [k] -> Map.Map k Int
+countOccurrences = foldr (\key acc -> Map.insertWith (+) key 1 acc) Map.empty
 
 -- e, se, sw, w, nw, and ne.
 getPath :: String -> Path
