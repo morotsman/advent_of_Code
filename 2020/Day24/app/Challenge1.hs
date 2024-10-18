@@ -10,6 +10,18 @@ type Coordinate = (Column, Row)
 
 type Path = [String]
 
+-- Any black tile with zero or more than 2 black tiles immediately adjacent to it is flipped to white.
+-- Any white tile with exactly 2 black tiles immediately adjacent to it is flipped to black.
+
+flipTiles :: Map.Map Coordinate Int -> Map.Map Coordinate Int
+flipTiles originalTiles = do
+  undefined
+
+colorOfAdjacentTiles :: Map.Map Coordinate Int -> Coordinate -> (Int, Int)
+colorOfAdjacentTiles tiles tile = do
+  let adjacentTiles = Map.elems $ adjacent tile
+  undefined
+
 blackTiles :: Map.Map Coordinate Int -> Map.Map Coordinate Int
 blackTiles visitedTiles = Map.filter odd visitedTiles
 
@@ -44,20 +56,17 @@ traversePath originalPosition path =
    go originalPosition path [originalPosition] where
      go :: Coordinate -> Path -> [Coordinate] -> [Coordinate]
      go current [] acc = acc
-     go (column, row) (step : rest) acc = do
-       case step of
-         "e"  -> go (column + 1, row) rest ((column + 1, row) : acc)
-         "w"  -> go (column - 1, row) rest ((column - 1, row) : acc)
-         "ne" -> if even row
-                 then go (column, row - 1) rest ((column, row - 1) : acc)
-                 else go (column + 1, row - 1) rest ((column + 1, row - 1) : acc)
-         "nw" -> if even row
-                 then go (column - 1, row - 1) rest ((column - 1, row - 1) : acc)
-                 else go (column, row - 1) rest ((column, row - 1) : acc)
-         "se" -> if even row
-                 then go (column, row + 1) rest ((column, row + 1) : acc)
-                 else go (column + 1, row + 1) rest ((column + 1, row + 1) : acc)
-         "sw" -> if even row
-                 then go (column - 1, row + 1) rest ((column - 1, row + 1) : acc)
-                 else go (column, row + 1) rest ((column, row + 1) : acc)
-         _    -> acc  -- handle unexpected steps safely
+     go coordinate@(column, row) (step : rest) acc = do
+       let neighbours = adjacent coordinate
+       let updateCoordinate = neighbours Map.! step
+       go updateCoordinate rest (updateCoordinate : acc)
+
+adjacent :: Coordinate -> Map.Map String Coordinate
+adjacent (column, row) = Map.fromList [
+    ("e", (column + 1, row)),
+    ("w", (column - 1, row)),
+    ("ne", if even row then (column, row - 1) else (column + 1, row - 1)),
+    ("nw", if even row then (column - 1, row - 1) else (column, row - 1)),
+    ("se", if even row then (column, row + 1) else (column + 1, row + 1)),
+    ("sw", if even row then (column - 1, row + 1) else (column, row + 1))
+  ]

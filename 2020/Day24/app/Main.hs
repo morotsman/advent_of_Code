@@ -7,7 +7,7 @@ import Challenge1
 
 main :: IO ()
 main = do
-  content <- readFile "/Users/niklasleopold/workspace/advent_of_Code/2020/Day24/app/input.txt"
+  content <- readFile "/Users/niklasleopold/workspace/advent_of_Code/2020/Day24/app/example.txt"
   let linesOfFile = lines content
 
   let tileVisits = visitedTiles linesOfFile
