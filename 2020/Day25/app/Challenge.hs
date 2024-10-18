@@ -7,19 +7,14 @@ import Debug.Trace (trace)
 type MemoCache = Map.Map Integer Integer
 
 transformSubjectNumber :: Integer -> Integer -> MemoCache -> (Integer, MemoCache)
-transformSubjectNumber 0 subjectNumber cache = (subjectNumber, cache)
+transformSubjectNumber 0 _ cache = (1, cache)
 transformSubjectNumber loopSize subjectNumber cache =
-    transform loopSize subjectNumber cache
-  where
-    transform :: Integer -> Integer -> MemoCache -> (Integer, MemoCache)
-    transform 0 _ cache = (1, cache)
-    transform loopSize subjectNumber cache =
-        case Map.lookup loopSize cache of
-            Just value -> (value, cache)
-            Nothing ->
-                let (nextValue, updatedCache) = transform (loopSize - 1) subjectNumber cache
-                    newValue = rem (nextValue * subjectNumber) 20201227
-                in (newValue, Map.insert loopSize newValue updatedCache)
+  case Map.lookup loopSize cache of
+    Just value -> (value, cache)
+    Nothing -> let
+      (nextValue, updatedCache) = transformSubjectNumber (loopSize - 1) subjectNumber cache
+      newValue = rem (nextValue * subjectNumber) 20201227
+      in (newValue, Map.insert loopSize newValue updatedCache)
 
 getLoopNumber :: Integer -> Integer -> Integer
 getLoopNumber publicKey subjectNumber =
