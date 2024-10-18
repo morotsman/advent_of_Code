@@ -1,6 +1,9 @@
-module Challenge1( Coordinate, Path, getPath, traversePath, visitedTiles, blackTiles) where
+{-# LANGUAGE ScopedTypeVariables #-}
+module Challenge1( Coordinate, Path, getPath, traversePath, visitedTiles, blackTiles, whiteTiles, flipIt) where
 
 import qualified Data.Map as Map
+import qualified Data.Set as Set
+import Data.Set (Set)
 
 -- column, row
 type Column = Int
@@ -10,21 +13,53 @@ type Coordinate = (Column, Row)
 
 type Path = [String]
 
+type Tiles = Set Coordinate
+type BlackTiles = Tiles
+type WhiteTiles = Tiles
+type Floor = (BlackTiles, WhiteTiles)
+
 -- Any black tile with zero or more than 2 black tiles immediately adjacent to it is flipped to white.
 -- Any white tile with exactly 2 black tiles immediately adjacent to it is flipped to black.
 
-flipTiles :: Map.Map Coordinate Int -> Map.Map Coordinate Int
-flipTiles originalTiles = do
-  undefined
+flipIt :: Floor -> Int -> Floor
+flipIt floor 0 = floor
+flipIt floor n = flipIt (flipTiles floor) (n-1)
 
-colorOfAdjacentTiles :: Map.Map Coordinate Int -> Coordinate -> (Int, Int)
-colorOfAdjacentTiles tiles tile = do
-  let adjacentTiles = Map.elems $ adjacent tile
-  undefined
+flipTiles :: Floor -> Floor
+flipTiles (blackTiles, whiteTiles) = let
+    (stillBlackTile, flipToWhite) = Set.partition (keepAsBlack blackTiles) blackTiles
+    (stillWhiteTile, flipToBlack) = Set.partition (keepAsWight blackTiles) whiteTiles
+    updatedBlackTiles = Set.union stillBlackTile flipToBlack
+    updatedWhiteTiles = Set.union (neighbouringWhiteTiles updatedBlackTiles) (Set.union flipToWhite stillWhiteTile)
+  in (updatedBlackTiles, updatedWhiteTiles)
 
-blackTiles :: Map.Map Coordinate Int -> Map.Map Coordinate Int
-blackTiles visitedTiles = Map.filter odd visitedTiles
+keepAsBlack :: Tiles -> Coordinate -> Bool
+keepAsBlack tiles tile = let
+  numberOfBlackAdjacentTiles = colorsOfAdjacent tiles tile
+  in numberOfBlackAdjacentTiles == 1 || numberOfBlackAdjacentTiles == 2
 
+keepAsWight :: Tiles -> Coordinate -> Bool
+keepAsWight tiles tile = let
+  numberOfBlackAdjacentTiles = colorsOfAdjacent tiles tile
+  in not $ numberOfBlackAdjacentTiles == 2
+
+colorsOfAdjacent :: Tiles -> Coordinate -> Int
+colorsOfAdjacent tiles tile = let
+  adjacentTiles = Map.elems $ adjacent tile
+  in foldr (\tile acc -> if Set.member tile tiles then acc + 1 else acc) 0 adjacentTiles
+
+blackTiles :: Map.Map Coordinate Int -> Set Coordinate
+blackTiles visitedTiles = Set.fromList $ Map.keys $ Map.filter odd visitedTiles
+
+whiteTiles :: Map.Map Coordinate Int -> Set Coordinate
+whiteTiles visitedTiles = let
+  blackTiles' = blackTiles visitedTiles
+  knownWhiteTiles = Set.fromList $ Map.keys $ Map.filter even visitedTiles
+  in Set.union knownWhiteTiles $ neighbouringWhiteTiles blackTiles'
+
+neighbouringWhiteTiles :: Set Coordinate -> Set Coordinate
+neighbouringWhiteTiles blackTiles' =
+  Set.fromList $ filter (flip Set.notMember blackTiles') $ concatMap (Map.elems . adjacent) $ Set.toList blackTiles'
 
 visitedTiles :: [String] -> Map.Map Coordinate Int
 visitedTiles lines = do
