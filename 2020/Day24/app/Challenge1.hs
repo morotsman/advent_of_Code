@@ -28,8 +28,7 @@ blackTiles visitedTiles = Map.filter odd visitedTiles
 
 visitedTiles :: [String] -> Map.Map Coordinate Int
 visitedTiles lines = do
-  let allDiscoveredTiles = map (\line -> head $ traversePath (0, 0) (getPath line)) lines
-  countOccurrences allDiscoveredTiles
+  countOccurrences $ map (\line -> head $ traversePath (0, 0) $ getPath line) lines
 
 
 countOccurrences :: (Ord k) => [k] -> Map.Map k Int
