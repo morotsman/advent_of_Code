@@ -9,12 +9,7 @@ type MemoCache = Map.Map Integer Integer
 transformSubjectNumber :: Integer -> Integer -> MemoCache -> (Integer, MemoCache)
 transformSubjectNumber 0 subjectNumber cache = (subjectNumber, cache)
 transformSubjectNumber loopSize subjectNumber cache =
-    case Map.lookup loopSize cache of
-        Just result -> (result, cache)
-        Nothing     ->
-            let (nextResult, newCache) = transform (loopSize - 1) subjectNumber cache
-                result = rem (nextResult * subjectNumber) 20201227
-            in (result, Map.insert loopSize result newCache)
+    transform loopSize subjectNumber cache
   where
     transform :: Integer -> Integer -> MemoCache -> (Integer, MemoCache)
     transform 0 _ cache = (1, cache)
