@@ -22,10 +22,11 @@ maintainer:         niklas.leopold@verisure.com
 extra-source-files: CHANGELOG.md
 
 executable day2
-    main-is:          Day11_2.hs
+    main-is:          Day12_depth_first.hs
 
     -- Modules included in this executable, other than Main.
-    -- other-modules:
+    other-modules:
+        MatrixUtil
 
     -- LANGUAGE extensions used by modules in this package.
     -- other-extensions:
