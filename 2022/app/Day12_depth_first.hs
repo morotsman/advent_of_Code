@@ -43,9 +43,13 @@ traverseMatrix' matrix coordinate@(column, row) traveledPath = let
 
 
 isValidNeighbour :: Matrix Char -> Char -> Coordinate -> Bool
-isValidNeighbour matrix currentHeight (column, row) =
-  case elementAt matrix column row of
-    Just neighbourHeight -> abs (fromEnum (if neighbourHeight == 'E' then 'z' else neighbourHeight) - fromEnum currentHeight) <= 1
+isValidNeighbour topology currentHeight (column, row) =
+  case elementAt topology column row of
+    Just neighbourHeight ->
+      if (fromEnum (if neighbourHeight == 'E' then 'z' else neighbourHeight) < fromEnum currentHeight) then
+        True
+      else
+        abs (fromEnum (if neighbourHeight == 'E' then 'z' else neighbourHeight) - fromEnum currentHeight) <= 1
     Nothing -> False
 
 neighbours :: Matrix Char -> Coordinate -> [Coordinate]
@@ -55,7 +59,8 @@ neighbours matrix (column, row) =
 
 main :: IO ()
 main = do
-  content <- readFile "/Users/niklasleopold/workspace/advent_of_Code/2022/app/Day12_example_1.txt"
+  --content <- readFile "/Users/niklasleopold/workspace/advent_of_Code/2022/app/Day12_example_1.txt"
+  content <- readFile "/Users/niklasleopold/workspace/advent_of_Code/2022/app/Day12_input.txt"
   let linesOfFile :: Matrix Char = Matrix (lines content)
   let answer = solveIt linesOfFile
   print answer
