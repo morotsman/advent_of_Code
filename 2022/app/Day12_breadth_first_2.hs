@@ -11,10 +11,13 @@ import qualified Data.Map.Strict as Map
 
 type Path = [Coordinate]
 
-solveIt :: Matrix Char -> Maybe Path
+solveIt :: Matrix Char -> Int
 solveIt matrix = let
-  maybeStartPosition = findElement matrix (\e -> e == 'S')
-  in fmap (traverseTopology matrix) maybeStartPosition
+  startPositions = findElements matrix (\e -> e == 'S' || e == 'a')
+  paths = fmap (traverseTopology matrix) startPositions
+  pathLengths = filter (\length -> length > 0) $ fmap length paths
+  shortestPath = minimumBy compare pathLengths
+  in shortestPath
 
 traverseTopology :: Matrix Char -> Coordinate -> Path
 traverseTopology matrix startPosition = traverseTopology' matrix (Set.singleton startPosition) [[startPosition]]
@@ -28,10 +31,6 @@ traverseTopology' topology visited paths = let
     if null newValidPaths then
       []
     else if (null maybeGoal) then
-      --trace ("Level: " ++ show (length $ head newValidPaths))
-      --trace (show $ length newValidPaths)
-      --trace (show newValidPaths)
-      --trace (show $ head (fmap (\path -> fmap (\(column, row) -> elementAt topology column row) path) newValidPaths))
       traverseTopology' topology newVisited newValidPaths
     else (head maybeGoal)
 
@@ -89,4 +88,3 @@ main = do
   let linesOfFile :: Matrix Char = Matrix (lines content)
   let answer = solveIt linesOfFile
   print answer
-  print (fmap (\a -> length a) answer)

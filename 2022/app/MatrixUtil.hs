@@ -1,5 +1,5 @@
 {-# LANGUAGE ScopedTypeVariables #-}
-module MatrixUtil (Matrix(..), MatrixDimension(..), rotateMatrix, flipMatrixHorizontally, flipMatrixVertically, getRow, getColumn, printMatrix, matrixDimension, elementAt, matrixValues, findElement, Coordinate, outOfBoundary) where
+module MatrixUtil (Matrix(..), MatrixDimension(..), rotateMatrix, flipMatrixHorizontally, flipMatrixVertically, getRow, getColumn, printMatrix, matrixDimension, elementAt, matrixValues, findElement, Coordinate, outOfBoundary, findElements) where
 
 import Data.List (transpose)
 
@@ -65,3 +65,17 @@ findElement matrix predicate = go 0 0
                          | otherwise -> go (x + 1) y
             Nothing -> go (x + 1) y  -- Continue searching
 
+findElements :: Matrix a -> (a -> Bool) -> [Coordinate]
+findElements matrix predicate = go 0 0
+  where
+    MatrixDimension width height = matrixDimension matrix
+
+    go :: Int -> Int -> [Coordinate]
+    go x y
+      | y >= height = []  -- We've gone past the last row
+      | x >= width  = go 0 (y + 1)  -- Move to the next row
+      | otherwise =
+          case elementAt matrix x y of
+            Just element | predicate element -> (x, y) : go (x + 1) y  -- Found a match
+                         | otherwise -> go (x + 1) y
+            Nothing -> go (x + 1) y  -- Continue searching
