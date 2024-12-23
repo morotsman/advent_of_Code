@@ -1,6 +1,8 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 module Main where
 
+import Debug.Trace
+
 type Answer = [String]
 
 solveIt :: [String] -> Answer
