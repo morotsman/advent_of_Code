@@ -22,8 +22,8 @@ solveIt = fmap (solveIt' . sortedPackages . concat) . parseInput
 
 solveIt' :: [Package] -> Maybe Int
 solveIt' packages = do
-  indexDivider2 :: Int <- elemIndex divider2 packages
-  indexDivider6 :: Int <- elemIndex divider6 packages
+  indexDivider2 <- elemIndex divider2 packages
+  indexDivider6 <- elemIndex divider6 packages
   return ((indexDivider2 + 1) * (indexDivider6 + 1))
 
 maybeToEither :: l -> Maybe r -> Either l r
