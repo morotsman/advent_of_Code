@@ -26,9 +26,6 @@ solveIt' packages = do
   indexDivider6 <- elemIndex divider6 packages
   return ((indexDivider2 + 1) * (indexDivider6 + 1))
 
-maybeToEither :: l -> Maybe r -> Either l r
-maybeToEither leftValue = maybe (Left leftValue) Right
-
 sortedPackages :: [Package] -> [Package]
 sortedPackages = sortBy orderPair
 
