@@ -1,17 +1,20 @@
 {-# LANGUAGE ScopedTypeVariables #-}
-module MatrixUtil (Matrix(..), MatrixDimension(..), rotateMatrix, flipMatrixHorizontally, flipMatrixVertically, getRow, getColumn, printMatrix, matrixDimension, elementAt, matrixValues, findElement, Coordinate, outOfBoundary, findElements) where
+module MatrixUtil (Matrix(..), MatrixDimension(..), rotateMatrix, flipMatrixHorizontally, flipMatrixVertically, getRow, getColumn, printMatrix, matrixDimension, elementAt, matrixValues, findElement, Coordinate ( .. ), outOfBoundary, findElements) where
 
 import Data.List (transpose)
 
 data Matrix a = Matrix [[a]] deriving (Show, Eq)
 
 data MatrixDimension = MatrixDimension {
-  matrixLength :: Int,
+  matrixWidth :: Int,
   matrixHeight :: Int
 }
 
 -- Column, Row
-type Coordinate = (Int, Int)
+data Coordinate = Coordinate {
+  column :: Int,
+  row :: Int
+} deriving (Show, Eq, Ord)
 
 matrixValues :: Matrix a -> [[a]]
 matrixValues (Matrix matrix) = matrix
@@ -42,13 +45,13 @@ matrixDimension :: Matrix a -> MatrixDimension
 matrixDimension (Matrix matrix) = MatrixDimension (length $ head matrix) (length matrix)
 
 outOfBoundary :: Int -> Int -> Matrix a -> Bool
-outOfBoundary x y matrix = let
-  (MatrixDimension length width) = matrixDimension matrix
-  in x < 0 || x >= length || y < 0 || y >= width
+outOfBoundary column row matrix = let
+  (MatrixDimension width height) = matrixDimension matrix
+  in column < 0 || column >= width || row < 0 || row >= height
 
 elementAt :: Matrix a -> Int -> Int -> Maybe a
-elementAt m@(Matrix matrix) x y | outOfBoundary x y m = Nothing
-                                | otherwise = Just ((matrix !! y) !! x)
+elementAt m@(Matrix matrix) column row | outOfBoundary column row m = Nothing
+                                | otherwise = Just ((matrix !! row) !! column)
 
 findElement :: Matrix a -> (a -> Bool) -> Maybe Coordinate
 findElement matrix predicate = go 0 0
@@ -56,14 +59,14 @@ findElement matrix predicate = go 0 0
     MatrixDimension width height = matrixDimension matrix
 
     go :: Int -> Int -> Maybe Coordinate
-    go x y
-      | y >= height = Nothing  -- We've gone past the last row
-      | x >= width  = go 0 (y + 1)  -- Move to the next row
+    go column row
+      | row >= height = Nothing  -- We've gone past the last row
+      | column >= width  = go 0 (row + 1)  -- Move to the next row
       | otherwise =
-          case elementAt matrix x y of
-            Just element | predicate element -> Just (x, y)  -- Found a match
-                         | otherwise -> go (x + 1) y
-            Nothing -> go (x + 1) y  -- Continue searching
+          case elementAt matrix column row of
+            Just element | predicate element -> Just (Coordinate column row)  -- Found a match
+                         | otherwise -> go (column + 1) row
+            Nothing -> go (column + 1) row  -- Continue searching
 
 findElements :: Matrix a -> (a -> Bool) -> [Coordinate]
 findElements matrix predicate = go 0 0
@@ -71,11 +74,11 @@ findElements matrix predicate = go 0 0
     MatrixDimension width height = matrixDimension matrix
 
     go :: Int -> Int -> [Coordinate]
-    go x y
-      | y >= height = []  -- We've gone past the last row
-      | x >= width  = go 0 (y + 1)  -- Move to the next row
+    go column row
+      | row >= height = []  -- We've gone past the last row
+      | column >= width  = go 0 (row + 1)  -- Move to the next row
       | otherwise =
-          case elementAt matrix x y of
-            Just element | predicate element -> (x, y) : go (x + 1) y  -- Found a match
-                         | otherwise -> go (x + 1) y
-            Nothing -> go (x + 1) y  -- Continue searching
+          case elementAt matrix column row of
+            Just element | predicate element -> (Coordinate column row) : go (column + 1) row  -- Found a match
+                         | otherwise -> go (column + 1) row
+            Nothing -> go (column + 1) row  -- Continue searching

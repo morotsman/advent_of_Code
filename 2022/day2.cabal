@@ -22,7 +22,7 @@ maintainer:         niklas.leopold@verisure.com
 extra-source-files: CHANGELOG.md
 
 executable day2
-    main-is:          Day13_2.hs
+    main-is:          Day14_1.hs
 
     -- Modules included in this executable, other than Main.
     other-modules:
@@ -37,6 +37,7 @@ executable day2
         lens,
         parallel,
         vector,
-        parsec >= 3.1 && < 4
+        parsec >= 3.1 && < 4,
+        mtl >= 2.2 && < 2.3
     hs-source-dirs:   app
     default-language: Haskell2010

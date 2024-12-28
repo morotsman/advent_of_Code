@@ -21,10 +21,10 @@ traverseMatrix matrix startPosition = let
   in minimumBy (comparing length) $ filter (\path -> length path > 0) paths
 
 traverseMatrix' :: Matrix Char -> Coordinate -> Path -> [Path]
-traverseMatrix' matrix coordinate@(column, row) traveledPath | elementAt matrix column row == Just 'E' =
+traverseMatrix' matrix coordinate@(Coordinate column row) traveledPath | elementAt matrix column row == Just 'E' =
   trace "Found it!!!"
   [coordinate : traveledPath]
-traverseMatrix' matrix coordinate@(column, row) traveledPath = let
+traverseMatrix' matrix coordinate@(Coordinate column row) traveledPath = let
   allNeighbours = neighbours matrix coordinate
   visitedCoordinates = Set.fromList traveledPath
   unvisitedNeighbours = filter (\c -> not (Set.member c visitedCoordinates)) allNeighbours
@@ -43,7 +43,7 @@ traverseMatrix' matrix coordinate@(column, row) traveledPath = let
 
 
 isValidNeighbour :: Matrix Char -> Char -> Coordinate -> Bool
-isValidNeighbour topology currentHeight (column, row) =
+isValidNeighbour topology currentHeight (Coordinate column row) =
   case elementAt topology column row of
     Just neighbourHeight ->
       if (fromEnum (if neighbourHeight == 'E' then 'z' else neighbourHeight) < fromEnum currentHeight) then
@@ -53,9 +53,16 @@ isValidNeighbour topology currentHeight (column, row) =
     Nothing -> False
 
 neighbours :: Matrix Char -> Coordinate -> [Coordinate]
-neighbours matrix (column, row) =
-  let possibleCoordinates = [(column - 1, row), (column + 1, row), (column, row - 1), (column, row + 1)]
-  in filter (\(column, row) -> not $ outOfBoundary column row matrix) possibleCoordinates
+neighbours topology (Coordinate column row) =
+  let possibleCoordinates =
+        [ Coordinate (column - 1) row
+        , Coordinate (column + 1) row
+        , Coordinate column (row - 1)
+        , Coordinate column (row + 1)
+        ]
+  in filter
+       (\(Coordinate column row) -> not $ outOfBoundary column row topology)
+       possibleCoordinates
 
 main :: IO ()
 main = do

@@ -1,7 +1,7 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 module Main where
 
-import MatrixUtil
+import MatrixUtil (Coordinate ( .. ), Matrix ( .. ), elementAt, findElement, outOfBoundary)
 import Debug.Trace
 import Data.List (minimumBy, groupBy)
 import Data.Ord (comparing)
@@ -43,7 +43,7 @@ removeDuplicates paths =
 
 foundGoal :: Matrix Char -> Path -> Bool
 foundGoal topology path = let
-    (column, row) = head path
+    Coordinate column row = head path
     maybePosition = elementAt topology column row
   in case maybePosition of
     Just 'E' -> True
@@ -58,7 +58,7 @@ validPaths topology visited path = let
     fmap (\neighbour -> neighbour : path) unvisitedNeighbours
 
 validNeighbours :: Matrix Char -> Coordinate -> [Coordinate]
-validNeighbours topology coordinate@(column, row) = let
+validNeighbours topology coordinate@(Coordinate column row) = let
   allNeighbours = neighbours topology coordinate
   maybeCurrentHeight = fmap (\h -> if h == 'S' then 'a' else h) $ elementAt topology column row
   validNeighbours = case maybeCurrentHeight of
@@ -68,12 +68,19 @@ validNeighbours topology coordinate@(column, row) = let
 
 
 neighbours :: Matrix Char -> Coordinate -> [Coordinate]
-neighbours topology (column, row) =
-  let possibleCoordinates = [(column - 1, row), (column + 1, row), (column, row - 1), (column, row + 1)]
-  in filter (\(column, row) -> not $ outOfBoundary column row topology) possibleCoordinates
+neighbours topology (Coordinate column row) =
+  let possibleCoordinates =
+        [ Coordinate (column - 1) row
+        , Coordinate (column + 1) row
+        , Coordinate column (row - 1)
+        , Coordinate column (row + 1)
+        ]
+  in filter
+       (\(Coordinate column row) -> not $ outOfBoundary column row topology)
+       possibleCoordinates
 
 isValidNeighbour :: Matrix Char -> Char -> Coordinate -> Bool
-isValidNeighbour topology currentHeight (column, row) =
+isValidNeighbour topology currentHeight (Coordinate column row) =
   case elementAt topology column row of
     Just neighbourHeight ->
       if (fromEnum (if neighbourHeight == 'E' then 'z' else neighbourHeight) < fromEnum currentHeight) then
